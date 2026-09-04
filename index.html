@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>iPhone 15 (Used) | Apple গ্যাজেট</title>
-<meta name="description" content="Apple গ্যাজেট থেকে ব্যবহৃত iPhone 15 মাত্র ৳6,599 টাকায়। ভালো কন্ডিশন, যাচাই করা ফোন। এখনই WhatsApp এ যোগাযোগ করে অর্ডার করুন।">
+<meta name="description" content="Apple গ্যাজেট থেকে ব্যবহৃত iPhone 15 মাত্র ৳6,599 টাকায়। ভালো কন্ডিশন, যাচাই করা ফোন। এখনই IMO তে যোগাযোগ করে অর্ডার করুন।">
 <meta name="theme-color" content="#faf9f6">
 <link rel="icon" type="image/png" href="favicon.png">
 <link rel="apple-touch-icon" href="favicon.png">
@@ -19,9 +19,9 @@
     --paper:#faf9f6;
     --card:#ffffff;
     --line:#eceae4;
---imo:#20b2e6;
-    --imo-deep:#1483ab;
-    --imo-glow: rgba(32,178,230,0.35);
+    --wa:#1AACE3;
+    --wa-deep:#0E86BD;
+    --wa-glow: rgba(26,172,227,0.35);
     --shadow-lg: 0 30px 60px -20px rgba(20,20,25,0.18);
     --shadow-sm: 0 10px 25px -10px rgba(20,20,25,0.12);
     --radius-lg: 28px;
@@ -114,7 +114,7 @@
   }
   .wordmark-sub{
     display:block;
-    margin-top:0;
+    margin-top:12px;
     font-size:11.5px;
     color:var(--muted);
     letter-spacing:0.04em;
@@ -300,7 +300,7 @@
   .cta-wrap{
     margin-top:26px;
   }
-  .wa-btn{
+  .imo-btn{
     position:relative;
     display:flex;
     align-items:center;
@@ -310,7 +310,7 @@
     padding:18px 20px;
     border:none;
     border-radius:18px;
-    background: linear-gradient(180deg, #27d566, var(--wa-deep));
+    background: linear-gradient(180deg, #29BEEF, var(--wa-deep));
     color:#ffffff;
     font-size:17px;
     font-weight:700;
@@ -318,11 +318,11 @@
     cursor:pointer;
     box-shadow:
       0 1px 0 rgba(255,255,255,0.25) inset,
-      0 16px 32px -12px rgba(24,154,72,0.55);
+      0 16px 32px -12px rgba(14,134,189,0.55);
     transition: transform 0.15s ease, box-shadow 0.15s ease;
     isolation:isolate;
   }
-  .wa-btn::before{
+  .imo-btn::before{
     content:"";
     position:absolute;
     inset:-6px;
@@ -337,39 +337,9 @@
     70%{ transform:scale(1.12); opacity:0; }
     100%{ transform:scale(1.12); opacity:0; }
   }
-  .wa-btn:active{
-    transform: scale(0.97);
-    box-shadow: 0 8px 18px -10px rgba(24,154,72,0.6);
-  }
-  .wa-btn svg{ width:24px; height:24px; flex-shrink:0; }
-  .wa-btn .btn-txt{ white-space:nowrap; }
-
-  .imo-btn{
-    position:relative;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    gap:10px;
-    width:100%;
-    margin-top:12px;
-    padding:18px 20px;
-    border:none;
-    border-radius:18px;
-    background: linear-gradient(180deg, #35c4f2, var(--imo-deep));
-    color:#ffffff;
-    font-size:17px;
-    font-weight:700;
-    letter-spacing:0.01em;
-    cursor:pointer;
-    box-shadow:
-      0 1px 0 rgba(255,255,255,0.25) inset,
-      0 16px 32px -12px rgba(20,131,171,0.55);
-    transition: transform 0.15s ease, box-shadow 0.15s ease;
-    isolation:isolate;
-  }
   .imo-btn:active{
     transform: scale(0.97);
-    box-shadow: 0 8px 18px -10px rgba(20,131,171,0.6);
+    box-shadow: 0 8px 18px -10px rgba(14,134,189,0.6);
   }
   .imo-btn svg{ width:24px; height:24px; flex-shrink:0; }
   .imo-btn .btn-txt{ white-space:nowrap; }
@@ -403,7 +373,7 @@
     display:none;
     z-index:40;
   }
-  .sticky-cta .imo-btn{ box-shadow: 0 -4px 24px rgba(0,0,0,0.06), 0 16px 32px -12px rgba(20,131,171,0.5); }
+  .sticky-cta .imo-btn{ box-shadow: 0 -4px 24px rgba(0,0,0,0.06), 0 16px 32px -12px rgba(14,134,189,0.5); }
 
   @media (max-width: 640px){
     .cta-wrap{ display:none; }
@@ -422,6 +392,7 @@
 </style>
 </head>
 <body>
+
 
 <header>
   <div class="brand">
@@ -480,6 +451,7 @@
     <span class="btn-txt bn">IMO তে যোগাযোগ করুন</span>
   </a>
 </div>
+
 
 </body>
 </html>
