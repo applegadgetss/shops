@@ -1,0 +1,2137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mobile Shop Cash Memo System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+<style>
+:root{
+  --navy:#0f1f3d;
+  --navy-dark:#0a1529;
+  --blue:#2563eb;
+  --blue-light:#eaf1ff;
+  --green:#16a34a;
+  --red:#dc2626;
+  --amber:#d97706;
+  --border:#e2e6ee;
+  --bg:#f4f6fb;
+  --text:#1c2333;
+  --muted:#6b7686;
+  --sidebar-w:250px;
+}
+
+*{box-sizing:border-box;}
+html,body{height:100%;}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:'Inter','Hind Siliguri',system-ui,-apple-system,sans-serif;
+  font-size:14.5px;
+}
+
+/* ---------------- Topbar ---------------- */
+.topbar{
+  height:58px;
+  background:var(--navy);
+  color:#fff;
+  position:sticky;
+  top:0;
+  z-index:1030;
+}
+.top-shop-name{font-weight:700;font-size:1.05rem;letter-spacing:.2px;}
+.top-logo{height:32px;width:32px;object-fit:cover;border-radius:6px;background:#fff;}
+.top-datetime{opacity:.85;font-size:.85rem;}
+.btn-icon{background:transparent;border:none;color:#fff;font-size:1.3rem;line-height:1;}
+
+/* ---------------- App shell / sidebar ---------------- */
+.app-shell{display:flex;min-height:calc(100vh - 58px);}
+.sidebar{
+  width:var(--sidebar-w);
+  background:var(--navy-dark);
+  color:#cfd8ea;
+  flex-shrink:0;
+  display:flex;
+  flex-direction:column;
+  position:sticky;
+  top:58px;
+  height:calc(100vh - 58px);
+}
+.sidebar-header{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:12px 16px;color:#fff;font-weight:600;border-bottom:1px solid rgba(255,255,255,.08);
+}
+.sidebar-nav{padding:10px;flex:1;overflow-y:auto;}
+.sidebar-nav .nav-link{
+  color:#cfd8ea;
+  padding:11px 14px;
+  border-radius:8px;
+  margin-bottom:3px;
+  font-weight:500;
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+.sidebar-nav .nav-link small{color:#8492ac;font-weight:400;margin-left:auto;font-size:.72rem;}
+.sidebar-nav .nav-link i{font-size:1.1rem;width:20px;text-align:center;}
+.sidebar-nav .nav-link:hover{background:rgba(255,255,255,.06);color:#fff;}
+.sidebar-nav .nav-link.active{background:var(--blue);color:#fff;}
+.sidebar-nav .nav-link.active small{color:#dbe6ff;}
+.sidebar-footer{padding:12px 16px;font-size:.72rem;color:#7484a0;border-top:1px solid rgba(255,255,255,.08);}
+.sidebar-overlay{display:none;}
+
+@media (max-width: 991.98px){
+  .sidebar{
+    position:fixed;
+    left:-280px;
+    top:0;
+    height:100vh;
+    z-index:1050;
+    transition:left .2s ease;
+    box-shadow:2px 0 20px rgba(0,0,0,.25);
+  }
+  .sidebar.open{left:0;}
+  .sidebar-overlay.open{
+    display:block;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:1040;
+  }
+}
+
+/* ---------------- Main content ---------------- */
+.main-content{flex:1;padding:20px;min-width:0;}
+.view{display:none;}
+.view.active{display:block;animation:none;}
+.view-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:8px;}
+.view-header h4{font-weight:700;margin:0;color:var(--navy);}
+
+.panel{
+  background:#fff;
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:18px;
+}
+.panel-title{font-weight:700;color:var(--navy);margin-bottom:14px;font-size:0.95rem;}
+.req{color:var(--red);}
+
+.form-label{font-size:.82rem;font-weight:600;color:#3a4356;margin-bottom:4px;}
+.form-control,.form-select{border-radius:8px;border-color:var(--border);font-size:.9rem;}
+.form-control:focus,.form-select:focus{border-color:var(--blue);box-shadow:0 0 0 .15rem rgba(37,99,235,.15);}
+
+.btn{border-radius:8px;font-weight:600;font-size:.88rem;}
+.btn-primary{background:var(--blue);border-color:var(--blue);}
+.btn-success{background:var(--green);border-color:var(--green);}
+.qa-btn{font-size:.85rem;}
+
+/* ---------------- Dashboard cards ---------------- */
+.stat-card{
+  background:#fff;border:1px solid var(--border);border-radius:12px;padding:16px;
+  display:flex;align-items:center;gap:12px;height:100%;
+}
+.stat-icon{
+  width:46px;height:46px;border-radius:10px;display:flex;align-items:center;justify-content:center;
+  font-size:1.3rem;color:#fff;flex-shrink:0;
+}
+.stat-label{font-size:.78rem;color:var(--muted);font-weight:600;}
+.stat-value{font-size:1.25rem;font-weight:800;color:var(--navy);}
+
+/* ---------------- Tables ---------------- */
+.table{font-size:.88rem;}
+.table thead th{
+  background:#f7f9fc;color:var(--navy);font-weight:700;font-size:.78rem;
+  text-transform:uppercase;letter-spacing:.3px;border-bottom:2px solid var(--border);
+  white-space:nowrap;
+}
+.table td{vertical-align:middle;}
+.table-responsive{border-radius:8px;}
+
+.badge-status{padding:4px 10px;border-radius:20px;font-size:.72rem;font-weight:700;letter-spacing:.3px;}
+.badge-paid{background:#e7f7ed;color:var(--green);}
+.badge-partial{background:#fef3e0;color:var(--amber);}
+.badge-due{background:#fdecec;color:var(--red);}
+
+/* ---------------- Product rows ---------------- */
+.product-row{
+  border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:12px;background:#fbfcfe;position:relative;
+}
+.product-row .row-title{font-weight:700;color:var(--navy);font-size:.82rem;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;}
+.product-row .btn-remove-row{background:none;border:none;color:var(--red);font-size:1.1rem;}
+.product-row .subtotal-badge{background:var(--blue-light);color:var(--blue);font-weight:700;padding:4px 10px;border-radius:8px;font-size:.82rem;}
+
+/* ---------------- Settings logo ---------------- */
+.settings-logo{width:96px;height:96px;object-fit:cover;border-radius:12px;border:1px solid var(--border);}
+.settings-logo-placeholder{
+  width:96px;height:96px;border-radius:12px;border:2px dashed var(--border);
+  display:flex;align-items:center;justify-content:center;font-size:2rem;color:#c3cad8;margin:0 auto;
+}
+
+/* ---------------- Toasts ---------------- */
+.toast{border-radius:10px;}
+
+/* =========================================================
+   CASH MEMO / PRINT STYLES
+   ========================================================= */
+.memo-sheet{
+  background:#fff;
+  color:#111;
+  font-family:'Hind Siliguri','Inter',sans-serif;
+  padding:20px;
+  max-width:800px;
+  margin:0 auto;
+  border:1px solid #ddd;
+}
+.memo-header{text-align:center;border-bottom:2px solid #222;padding-bottom:10px;margin-bottom:10px;}
+.shop-logo{max-height:60px;max-width:120px;object-fit:contain;margin-bottom:6px;display:block;margin-left:auto;margin-right:auto;}
+.shop-name{font-size:1.5rem;font-weight:800;letter-spacing:.5px;}
+.shop-tagline{font-size:.85rem;color:#444;margin-bottom:4px;}
+.shop-contact{font-size:.78rem;color:#333;line-height:1.5;}
+
+.memo-title{
+  text-align:center;font-weight:800;font-size:1.1rem;letter-spacing:2px;
+  margin:10px 0;border:1px solid #222;padding:4px;
+}
+.memo-meta{display:flex;justify-content:space-between;font-size:.85rem;margin-bottom:8px;flex-wrap:wrap;gap:4px;}
+.memo-customer{font-size:.85rem;border:1px solid #ddd;border-radius:6px;padding:8px 10px;margin-bottom:12px;background:#fafafa;}
+
+.memo-table{width:100%;border-collapse:collapse;font-size:.8rem;margin-bottom:10px;}
+.memo-table th,.memo-table td{border:1px solid #ccc;padding:6px 8px;text-align:left;vertical-align:top;}
+.memo-table th{background:#f0f2f5;font-weight:700;}
+.memo-table .c-idx{width:26px;text-align:center;}
+.memo-table .c-qty{width:40px;text-align:center;}
+.memo-table .c-price,.memo-table .c-disc,.memo-table .c-sub{width:80px;text-align:right;white-space:nowrap;}
+.pname{font-weight:700;}
+.pspecs{font-size:.72rem;color:#555;margin-top:2px;}
+
+.memo-totals{width:100%;max-width:320px;margin-left:auto;font-size:.85rem;margin-bottom:14px;}
+.memo-totals .row{display:flex;justify-content:space-between;padding:3px 0;}
+.memo-totals .row.grand{font-weight:800;font-size:1rem;border-top:1px solid #222;border-bottom:1px solid #222;margin:4px 0;padding:5px 0;}
+.memo-totals .row.due span:last-child{color:var(--red);font-weight:800;}
+.memo-totals .row.status span:last-child{font-weight:800;}
+
+.memo-terms{font-size:.72rem;color:#333;border-top:1px dashed #999;padding-top:8px;margin-bottom:20px;}
+.terms-title{font-weight:700;margin-bottom:4px;}
+.memo-terms ol{margin:0;padding-left:18px;}
+
+.memo-signatures{display:flex;justify-content:space-between;margin-top:40px;font-size:.78rem;}
+.sig-box{width:45%;text-align:center;}
+.sig-line{border-top:1px solid #333;margin-bottom:6px;height:36px;}
+
+.memo-footer{text-align:center;font-size:.72rem;color:#555;margin-top:10px;border-top:1px dashed #999;padding-top:8px;}
+
+/* Screen: hide print-only stuff not relevant, keep normal display */
+#printArea{background:#eee;padding:10px;border-radius:8px;}
+
+/* Thermal (80mm) mode overrides applied via body class before printing */
+body.print-thermal .memo-sheet{
+  max-width:78mm;
+  font-size:11px;
+  padding:6px;
+  border:none;
+}
+body.print-thermal .shop-name{font-size:1rem;}
+body.print-thermal .memo-table{font-size:10px;}
+body.print-thermal .memo-table th,
+body.print-thermal .memo-table td{padding:3px 4px;}
+body.print-thermal .memo-signatures{margin-top:20px;}
+body.print-thermal .memo-terms ol{padding-left:14px;}
+
+@media print{
+  body *{visibility:hidden;}
+  #printArea, #printArea *{visibility:visible;}
+  #printArea{position:absolute;left:0;top:0;width:100%;background:#fff;padding:0;}
+  .memo-sheet{border:none;max-width:100%;box-shadow:none;}
+  .no-print{display:none !important;}
+  .modal{position:absolute !important;}
+
+  body.print-a4 .memo-sheet{max-width:190mm;margin:0 auto;padding:10mm;}
+  @page{margin:10mm;}
+}
+
+</style>
+</head>
+<body>
+
+<!-- ============ TOP NAVBAR ============ -->
+<nav class="topbar d-flex align-items-center justify-content-between px-3">
+  <div class="d-flex align-items-center gap-2">
+    <button class="btn btn-icon d-lg-none" id="btnOpenSidebar"><i class="bi bi-list"></i></button>
+    <img id="topShopLogo" src="" alt="" class="top-logo d-none">
+    <span class="top-shop-name" id="topShopName">Mobile Shop</span>
+  </div>
+  <div class="d-flex align-items-center gap-2">
+    <span class="d-none d-md-inline top-datetime" id="topDateTime"></span>
+    <button class="btn btn-sm btn-outline-light" id="btnQuickNew"><i class="bi bi-plus-lg"></i> <span class="d-none d-sm-inline">নতুন ক্যাশ মেমো</span></button>
+  </div>
+</nav>
+
+<div class="app-shell">
+  <!-- ============ SIDEBAR ============ -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header d-lg-none">
+      <span>Menu</span>
+      <button class="btn btn-icon" id="btnCloseSidebar"><i class="bi bi-x-lg"></i></button>
+    </div>
+    <nav class="nav flex-column sidebar-nav">
+      <a href="#" class="nav-link" data-view="dashboard"><i class="bi bi-speedometer2"></i> Dashboard</a>
+      <a href="#" class="nav-link" data-view="newInvoice"><i class="bi bi-receipt"></i> নতুন ক্যাশ মেমো <small>New Cash Memo</small></a>
+      <a href="#" class="nav-link" data-view="salesHistory"><i class="bi bi-clock-history"></i> Sales History</a>
+      <a href="#" class="nav-link" data-view="dueCustomers"><i class="bi bi-cash-coin"></i> বাকি <small>Due Customers</small></a>
+      <a href="#" class="nav-link" data-view="customers"><i class="bi bi-people"></i> Customers</a>
+      <a href="#" class="nav-link" data-view="imeiSearch"><i class="bi bi-search"></i> IMEI Search</a>
+      <a href="#" class="nav-link" data-view="settings"><i class="bi bi-gear"></i> Shop Settings</a>
+    </nav>
+    <div class="sidebar-footer">
+      <small>Data is saved in this browser only.</small>
+    </div>
+  </aside>
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+  <!-- ============ MAIN CONTENT ============ -->
+  <main class="main-content">
+
+    <!-- ---------- DASHBOARD ---------- -->
+    <section class="view" id="view-dashboard">
+      <div class="view-header">
+        <h4>Dashboard</h4>
+        <div class="text-muted small" id="dashDate"></div>
+      </div>
+      <div class="row g-3 mb-3" id="dashCards"></div>
+      <div class="row g-3">
+        <div class="col-12">
+          <div class="panel">
+            <h6 class="panel-title">Quick Actions</h6>
+            <div class="d-flex flex-wrap gap-2">
+              <button class="btn btn-primary qa-btn" data-view="newInvoice"><i class="bi bi-plus-lg"></i> New Cash Memo</button>
+              <button class="btn btn-outline-primary qa-btn" id="qaAddCustomer"><i class="bi bi-person-plus"></i> Add Customer</button>
+              <button class="btn btn-outline-primary qa-btn" data-view="salesHistory"><i class="bi bi-clock-history"></i> Sales History</button>
+              <button class="btn btn-outline-primary qa-btn" data-view="dueCustomers"><i class="bi bi-cash-coin"></i> Due Customers</button>
+              <button class="btn btn-outline-primary qa-btn" data-view="settings"><i class="bi bi-gear"></i> Shop Settings</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="row g-3 mt-1">
+        <div class="col-12">
+          <div class="panel">
+            <h6 class="panel-title">Recent Invoices</h6>
+            <div class="table-responsive">
+              <table class="table table-hover align-middle mb-0" id="dashRecentTable">
+                <thead><tr><th>Invoice</th><th>Customer</th><th>Total</th><th>Paid</th><th>Due</th><th>Status</th><th></th></tr></thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ---------- NEW / EDIT INVOICE ---------- -->
+    <section class="view" id="view-newInvoice">
+      <div class="view-header">
+        <h4 id="invoiceFormTitle">নতুন ক্যাশ মেমো — New Cash Memo</h4>
+      </div>
+
+      <div class="panel mb-3">
+        <div class="row g-3">
+          <div class="col-6 col-md-3">
+            <label class="form-label">Memo No</label>
+            <input type="text" class="form-control" id="fInvoiceNo" readonly>
+          </div>
+          <div class="col-6 col-md-3">
+            <label class="form-label">Date</label>
+            <input type="date" class="form-control" id="fDate">
+          </div>
+          <div class="col-6 col-md-3">
+            <label class="form-label">Time</label>
+            <input type="text" class="form-control" id="fTime">
+          </div>
+          <div class="col-6 col-md-3">
+            <label class="form-label">Status</label>
+            <input type="text" class="form-control" id="fStatus" readonly>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel mb-3">
+        <h6 class="panel-title d-flex justify-content-between align-items-center">
+          <span>Customer Details</span>
+          <button class="btn btn-sm btn-outline-secondary" id="btnPickCustomer" type="button"><i class="bi bi-people"></i> Select Existing Customer</button>
+        </h6>
+        <input type="hidden" id="fCustomerId">
+        <div class="row g-3">
+          <div class="col-12 col-md-6">
+            <label class="form-label">Customer Name <span class="req">*</span></label>
+            <input type="text" class="form-control" id="fCustName" placeholder="e.g. Md. Rahim">
+          </div>
+          <div class="col-6 col-md-3">
+            <label class="form-label">Mobile Number <span class="req">*</span></label>
+            <input type="text" class="form-control" id="fCustPhone" placeholder="01XXXXXXXXX">
+          </div>
+          <div class="col-6 col-md-3">
+            <label class="form-label">Alternative Number</label>
+            <input type="text" class="form-control" id="fCustAltPhone">
+          </div>
+          <div class="col-12">
+            <label class="form-label">Address</label>
+            <input type="text" class="form-control" id="fCustAddress">
+          </div>
+        </div>
+      </div>
+
+      <div class="panel mb-3">
+        <h6 class="panel-title d-flex justify-content-between align-items-center">
+          <span>Product Details</span>
+          <button class="btn btn-sm btn-primary" id="btnAddProduct" type="button"><i class="bi bi-plus-lg"></i> Add Product</button>
+        </h6>
+        <div id="productRows"></div>
+      </div>
+
+      <div class="panel mb-3">
+        <h6 class="panel-title">Payment</h6>
+        <div class="row g-3">
+          <div class="col-6 col-md-3">
+            <label class="form-label">Subtotal</label>
+            <input type="text" class="form-control" id="fSubtotal" readonly>
+          </div>
+          <div class="col-6 col-md-3">
+            <label class="form-label">Additional Discount</label>
+            <input type="number" min="0" class="form-control" id="fAddDiscount" value="0">
+          </div>
+          <div class="col-6 col-md-3">
+            <label class="form-label">Grand Total</label>
+            <input type="text" class="form-control fw-bold" id="fGrandTotal" readonly>
+          </div>
+          <div class="col-6 col-md-3">
+            <label class="form-label">Payment Method</label>
+            <select class="form-select" id="fPaymentMethod">
+              <option>Cash</option><option>bKash</option><option>Nagad</option><option>Rocket</option>
+              <option>Bank</option><option>Card</option><option>Mixed</option>
+            </select>
+          </div>
+        </div>
+        <div class="row g-3 mt-1" id="singlePaymentRow">
+          <div class="col-12 col-md-4">
+            <label class="form-label">Advance / Paid Amount</label>
+            <input type="number" min="0" class="form-control" id="fPaidAmount" value="0">
+          </div>
+        </div>
+        <div class="row g-3 mt-1 d-none" id="mixedPaymentRow">
+          <div class="col-6 col-md-3">
+            <label class="form-label">Cash</label>
+            <input type="number" min="0" class="form-control mix-amt" id="fMixCash" value="0">
+          </div>
+          <div class="col-6 col-md-3">
+            <label class="form-label">bKash</label>
+            <input type="number" min="0" class="form-control mix-amt" id="fMixBkash" value="0">
+          </div>
+          <div class="col-6 col-md-3">
+            <label class="form-label">Nagad</label>
+            <input type="number" min="0" class="form-control mix-amt" id="fMixNagad" value="0">
+          </div>
+          <div class="col-6 col-md-3">
+            <label class="form-label">Bank/Card</label>
+            <input type="number" min="0" class="form-control mix-amt" id="fMixBank" value="0">
+          </div>
+        </div>
+        <div class="row g-3 mt-1">
+          <div class="col-6 col-md-3">
+            <label class="form-label">মোট Paid</label>
+            <input type="text" class="form-control" id="fTotalPaid" readonly>
+          </div>
+          <div class="col-6 col-md-3">
+            <label class="form-label">বাকি Due</label>
+            <input type="text" class="form-control text-danger fw-bold" id="fDueAmount" readonly>
+          </div>
+          <div class="col-6 col-md-3">
+            <label class="form-label">Change Returned</label>
+            <input type="text" class="form-control text-success" id="fChangeAmount" readonly>
+          </div>
+        </div>
+      </div>
+
+      <div class="d-flex flex-wrap gap-2 mb-5">
+        <button class="btn btn-success btn-lg" id="btnSaveInvoice"><i class="bi bi-check-lg"></i> Save Cash Memo</button>
+        <button class="btn btn-outline-secondary btn-lg" id="btnCancelInvoice">Cancel</button>
+      </div>
+    </section>
+
+    <!-- ---------- SALES HISTORY ---------- -->
+    <section class="view" id="view-salesHistory">
+      <div class="view-header"><h4>Sales History</h4></div>
+      <div class="panel mb-3">
+        <div class="row g-2 align-items-end">
+          <div class="col-12 col-md-4">
+            <label class="form-label">Search (Invoice / Customer / Mobile / IMEI)</label>
+            <input type="text" class="form-control" id="historySearch" placeholder="Type to search...">
+          </div>
+          <div class="col-6 col-md-3">
+            <label class="form-label">Date Filter</label>
+            <select class="form-select" id="historyDateFilter">
+              <option value="all">All Time</option>
+              <option value="today">Today</option>
+              <option value="yesterday">Yesterday</option>
+              <option value="week">This Week</option>
+              <option value="month">This Month</option>
+              <option value="custom">Custom Range</option>
+            </select>
+          </div>
+          <div class="col-3 col-md-2 d-none" id="historyFromWrap">
+            <label class="form-label">From</label>
+            <input type="date" class="form-control" id="historyFrom">
+          </div>
+          <div class="col-3 col-md-2 d-none" id="historyToWrap">
+            <label class="form-label">To</label>
+            <input type="date" class="form-control" id="historyTo">
+          </div>
+          <div class="col-6 col-md-3">
+            <select class="form-select" id="historyStatusFilter">
+              <option value="all">All Status</option>
+              <option value="PAID">Paid</option>
+              <option value="PARTIAL">Partial</option>
+              <option value="DUE">Due</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0" id="historyTable">
+            <thead><tr><th>Invoice</th><th>Date</th><th>Customer</th><th>Mobile</th><th>Total</th><th>Paid</th><th>Due</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ---------- DUE CUSTOMERS ---------- -->
+    <section class="view" id="view-dueCustomers">
+      <div class="view-header"><h4>বাকি — Due Customers</h4></div>
+      <div class="panel">
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0" id="dueTable">
+            <thead><tr><th>Customer</th><th>Phone</th><th>Invoice</th><th>Total</th><th>Paid</th><th>Due</th><th>Date</th><th>Actions</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ---------- CUSTOMERS ---------- -->
+    <section class="view" id="view-customers">
+      <div class="view-header d-flex justify-content-between align-items-center">
+        <h4>Customers</h4>
+        <button class="btn btn-primary" id="btnNewCustomerTop"><i class="bi bi-person-plus"></i> Add Customer</button>
+      </div>
+      <div class="panel mb-3">
+        <input type="text" class="form-control" id="customerSearch" placeholder="Search by name or phone...">
+      </div>
+      <div class="panel">
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0" id="customersTable">
+            <thead><tr><th>Customer ID</th><th>Name</th><th>Phone</th><th>Address</th><th>Total Purchase</th><th>Total Paid</th><th>Total Due</th><th>Actions</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ---------- IMEI SEARCH ---------- -->
+    <section class="view" id="view-imeiSearch">
+      <div class="view-header"><h4>IMEI Search</h4></div>
+      <div class="panel mb-3">
+        <label class="form-label">Enter IMEI Number</label>
+        <input type="text" class="form-control form-control-lg" id="imeiSearchInput" placeholder="e.g. 123456789012345">
+      </div>
+      <div id="imeiResults"></div>
+    </section>
+
+    <!-- ---------- SETTINGS ---------- -->
+    <section class="view" id="view-settings">
+      <div class="view-header"><h4>Shop Settings</h4></div>
+      <div class="panel mb-3">
+        <h6 class="panel-title">Shop Information</h6>
+        <div class="row g-3">
+          <div class="col-12 col-md-3 text-center">
+            <img id="settingsLogoPreview" src="" class="settings-logo mb-2 d-none">
+            <div id="settingsLogoPlaceholder" class="settings-logo-placeholder mb-2"><i class="bi bi-shop"></i></div>
+            <input type="file" accept="image/*" class="form-control form-control-sm" id="sLogoInput">
+          </div>
+          <div class="col-12 col-md-9">
+            <div class="row g-3">
+              <div class="col-md-6"><label class="form-label">Shop Name</label><input type="text" class="form-control" id="sName"></div>
+              <div class="col-md-6"><label class="form-label">Tagline</label><input type="text" class="form-control" id="sTagline"></div>
+              <div class="col-md-6"><label class="form-label">Owner Name</label><input type="text" class="form-control" id="sOwner"></div>
+              <div class="col-md-6"><label class="form-label">Trade License No. (optional)</label><input type="text" class="form-control" id="sLicense"></div>
+            </div>
+          </div>
+        </div>
+        <div class="row g-3 mt-1">
+          <div class="col-md-4"><label class="form-label">Mobile Number</label><input type="text" class="form-control" id="sPhone"></div>
+          <div class="col-md-4"><label class="form-label">WhatsApp Number</label><input type="text" class="form-control" id="sWhatsapp"></div>
+          <div class="col-md-4"><label class="form-label">Email</label><input type="email" class="form-control" id="sEmail"></div>
+          <div class="col-md-6"><label class="form-label">Facebook Page</label><input type="text" class="form-control" id="sFacebook"></div>
+          <div class="col-md-6"><label class="form-label">Website</label><input type="text" class="form-control" id="sWebsite"></div>
+          <div class="col-12"><label class="form-label">Shop Address</label><input type="text" class="form-control" id="sAddress"></div>
+        </div>
+      </div>
+
+      <div class="panel mb-3">
+        <h6 class="panel-title">Terms &amp; Conditions (one per line, printed on every cash memo)</h6>
+        <textarea class="form-control" rows="6" id="sTerms"></textarea>
+      </div>
+
+      <div class="d-flex flex-wrap gap-2 mb-3">
+        <button class="btn btn-success" id="btnSaveSettings"><i class="bi bi-check-lg"></i> Save Settings</button>
+      </div>
+
+      <div class="panel mb-5">
+        <h6 class="panel-title">Data Management</h6>
+        <p class="text-muted small">Your data is stored only in this browser (LocalStorage). Clearing browser data will erase it — back up regularly.</p>
+        <div class="d-flex flex-wrap gap-2">
+          <button class="btn btn-outline-primary" id="btnExportData"><i class="bi bi-download"></i> Export / Backup (JSON)</button>
+          <label class="btn btn-outline-primary mb-0">
+            <i class="bi bi-upload"></i> Import / Restore (JSON)
+            <input type="file" accept="application/json" id="importFileInput" class="d-none">
+          </label>
+          <button class="btn btn-outline-danger" id="btnClearData"><i class="bi bi-trash"></i> Clear All Data</button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- ============ PRINT PREVIEW MODAL ============ -->
+<div class="modal fade" id="printModal" tabindex="-1">
+  <div class="modal-dialog modal-xl modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header no-print">
+        <h5 class="modal-title">Cash Memo Preview</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="no-print d-flex flex-wrap gap-2 mb-3">
+          <button class="btn btn-primary" id="btnPrintA4"><i class="bi bi-printer"></i> Print A4</button>
+          <button class="btn btn-outline-primary" id="btnPrintThermal"><i class="bi bi-receipt"></i> Print 80mm Thermal</button>
+          <button class="btn btn-outline-secondary" id="btnDownloadPdf"><i class="bi bi-file-earmark-pdf"></i> Download PDF</button>
+        </div>
+        <div id="printArea"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ CUSTOMER PICKER MODAL ============ -->
+<div class="modal fade" id="customerPickerModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Select Customer</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <input type="text" class="form-control mb-3" id="pickerSearch" placeholder="Search by name or phone...">
+        <div class="table-responsive" style="max-height:350px;">
+          <table class="table table-hover">
+            <thead><tr><th>Name</th><th>Phone</th><th>Address</th><th></th></tr></thead>
+            <tbody id="pickerTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ NEW / EDIT CUSTOMER MODAL ============ -->
+<div class="modal fade" id="customerModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="customerModalTitle">Add Customer</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="cmCustomerId">
+        <div class="mb-2"><label class="form-label">Name <span class="req">*</span></label><input type="text" class="form-control" id="cmName"></div>
+        <div class="mb-2"><label class="form-label">Mobile Number <span class="req">*</span></label><input type="text" class="form-control" id="cmPhone"></div>
+        <div class="mb-2"><label class="form-label">Alternative Number</label><input type="text" class="form-control" id="cmAltPhone"></div>
+        <div class="mb-2"><label class="form-label">Address</label><input type="text" class="form-control" id="cmAddress"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button class="btn btn-success" id="btnSaveCustomerModal">Save Customer</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ CUSTOMER PROFILE MODAL ============ -->
+<div class="modal fade" id="customerProfileModal" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="profileCustomerName">Customer Profile</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" id="profileBody"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ ADD DUE PAYMENT MODAL ============ -->
+<div class="modal fade" id="duePaymentModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Add Payment</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="dpInvoiceId">
+        <div class="mb-2"><strong>Invoice:</strong> <span id="dpInvoiceNo"></span></div>
+        <div class="mb-2"><strong>Previous Due:</strong> <span id="dpPreviousDue"></span></div>
+        <div class="mb-2">
+          <label class="form-label">Payment Amount</label>
+          <input type="number" min="0" class="form-control" id="dpAmount">
+        </div>
+        <div class="mb-2">
+          <label class="form-label">Payment Method</label>
+          <select class="form-select" id="dpMethod">
+            <option>Cash</option><option>bKash</option><option>Nagad</option><option>Rocket</option><option>Bank</option><option>Card</option>
+          </select>
+        </div>
+        <div class="alert alert-info py-2 small mb-0" id="dpPreview"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button class="btn btn-success" id="btnConfirmDuePayment">Save Payment</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ CONFIRM MODAL (generic, for destructive actions) ============ -->
+<div class="modal fade" id="confirmModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Please Confirm</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" id="confirmModalBody">Are you sure?</div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button class="btn btn-danger" id="btnConfirmYes">Yes, Continue</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ TOAST CONTAINER ============ -->
+<div class="toast-container position-fixed bottom-0 end-0 p-3" id="toastContainer" style="z-index:2000"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+/* ============================================================
+   storage.js — Local data layer for Mobile Shop Cash Memo App
+   Uses localStorage as the persistence engine.
+   ============================================================ */
+
+const DB_KEYS = {
+  SHOP: 'msi_shop_settings',
+  CUSTOMERS: 'msi_customers',
+  INVOICES: 'msi_invoices',
+  COUNTERS: 'msi_counters',
+  SEEDED: 'msi_seeded_v1'
+};
+
+const DEFAULT_TERMS = [
+  'Sold products cannot be returned without valid reason.',
+  'Warranty is applicable according to company/shop policy.',
+  'Physical damage or liquid damage will void warranty.',
+  'Customer must preserve this cash memo for warranty claims.',
+  'Accessories may have separate warranty policies.'
+];
+
+const DEFAULT_SHOP = {
+  name: 'ABC MOBILE ZONE',
+  tagline: 'Mobile Phone • Accessories • Servicing',
+  logo: '',
+  owner: 'Md. Karim Hossain',
+  phone: '01711-000000',
+  whatsapp: '01711-000000',
+  address: 'Shop # 12, New Market, Dhaka, Bangladesh',
+  facebook: 'facebook.com/abcmobilezone',
+  website: '',
+  email: '',
+  license: '',
+  terms: DEFAULT_TERMS.slice()
+};
+
+const Storage = {
+  get(key, def) {
+    try {
+      const v = localStorage.getItem(key);
+      return v ? JSON.parse(v) : def;
+    } catch (e) {
+      console.error('Storage.get error', key, e);
+      return def;
+    }
+  },
+  set(key, val) {
+    try {
+      localStorage.setItem(key, JSON.stringify(val));
+      return true;
+    } catch (e) {
+      console.error('Storage.set error', key, e);
+      return false;
+    }
+  },
+
+  getShop() { return this.get(DB_KEYS.SHOP, DEFAULT_SHOP); },
+  setShop(s) { return this.set(DB_KEYS.SHOP, s); },
+
+  getCustomers() { return this.get(DB_KEYS.CUSTOMERS, []); },
+  setCustomers(c) { return this.set(DB_KEYS.CUSTOMERS, c); },
+
+  getInvoices() { return this.get(DB_KEYS.INVOICES, []); },
+  setInvoices(i) { return this.set(DB_KEYS.INVOICES, i); },
+
+  getCounters() { return this.get(DB_KEYS.COUNTERS, { invoiceSeq: 0, customerSeq: 0 }); },
+  setCounters(c) { return this.set(DB_KEYS.COUNTERS, c); },
+
+  nextInvoiceNo() {
+    const c = this.getCounters();
+    c.invoiceSeq = (c.invoiceSeq || 0) + 1;
+    this.setCounters(c);
+    return 'INV-' + String(c.invoiceSeq).padStart(4, '0');
+  },
+  nextCustomerId() {
+    const c = this.getCounters();
+    c.customerSeq = (c.customerSeq || 0) + 1;
+    this.setCounters(c);
+    return 'CUS-' + String(c.customerSeq).padStart(4, '0');
+  },
+
+  findCustomer(id) {
+    return this.getCustomers().find(c => c.id === id) || null;
+  },
+  saveCustomer(customer) {
+    const list = this.getCustomers();
+    const idx = list.findIndex(c => c.id === customer.id);
+    if (idx > -1) list[idx] = customer; else list.push(customer);
+    this.setCustomers(list);
+    return customer;
+  },
+  deleteCustomer(id) {
+    this.setCustomers(this.getCustomers().filter(c => c.id !== id));
+  },
+
+  findInvoice(id) {
+    return this.getInvoices().find(i => i.id === id) || null;
+  },
+  saveInvoice(invoice) {
+    const list = this.getInvoices();
+    const idx = list.findIndex(i => i.id === invoice.id);
+    if (idx > -1) list[idx] = invoice; else list.push(invoice);
+    this.setInvoices(list);
+    return invoice;
+  },
+  deleteInvoice(id) {
+    this.setInvoices(this.getInvoices().filter(i => i.id !== id));
+  },
+
+  exportAll() {
+    return {
+      shop: this.getShop(),
+      customers: this.getCustomers(),
+      invoices: this.getInvoices(),
+      counters: this.getCounters(),
+      exportedAt: new Date().toISOString(),
+      version: 1
+    };
+  },
+  importAll(data) {
+    if (!data || typeof data !== 'object') throw new Error('Invalid backup file');
+    if (data.shop) this.setShop(data.shop);
+    if (Array.isArray(data.customers)) this.setCustomers(data.customers);
+    if (Array.isArray(data.invoices)) this.setInvoices(data.invoices);
+    if (data.counters) this.setCounters(data.counters);
+    return true;
+  },
+  clearAll() {
+    localStorage.removeItem(DB_KEYS.SHOP);
+    localStorage.removeItem(DB_KEYS.CUSTOMERS);
+    localStorage.removeItem(DB_KEYS.INVOICES);
+    localStorage.removeItem(DB_KEYS.COUNTERS);
+  }
+};
+
+/* ---------------- Helpers ---------------- */
+
+function uid(prefix = 'id') {
+  return prefix + '-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8);
+}
+
+function todayISO() {
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+
+function nowTime() {
+  const d = new Date();
+  let h = d.getHours();
+  const m = String(d.getMinutes()).padStart(2, '0');
+  const ampm = h >= 12 ? 'PM' : 'AM';
+  h = h % 12; if (h === 0) h = 12;
+  return String(h).padStart(2, '0') + ':' + m + ' ' + ampm;
+}
+
+/* Bangladeshi-style number grouping: 150000 -> 1,50,000 */
+function formatNumberBD(num) {
+  num = Math.round(Number(num) || 0);
+  const neg = num < 0;
+  num = Math.abs(num);
+  let s = String(num);
+  let lastThree = s.slice(-3);
+  let other = s.slice(0, -3);
+  if (other !== '') {
+    other = other.replace(/\B(?=(\d{2})+(?!\d))/g, ',');
+    lastThree = ',' + lastThree;
+  }
+  return (neg ? '-' : '') + other + lastThree;
+}
+
+function formatBDT(num) {
+  return '৳' + formatNumberBD(num);
+}
+
+function escapeHTML(str) {
+  if (str === null || str === undefined) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function formatDatePretty(iso) {
+  if (!iso) return '';
+  const d = new Date(iso + (iso.length === 10 ? 'T00:00:00' : ''));
+  if (isNaN(d)) return iso;
+  const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  return d.getDate() + ' ' + months[d.getMonth()] + ' ' + d.getFullYear();
+}
+
+function isValidBDPhone(phone) {
+  if (!phone) return false;
+  const cleaned = phone.replace(/[\s-]/g, '');
+  return /^(?:\+?88)?01[3-9]\d{8}$/.test(cleaned);
+}
+
+
+/* ============================================================
+   invoice.js — Invoice math, warranty calc, print rendering
+   ============================================================ */
+
+const WARRANTY_PERIOD_LABELS = {
+  '7d': '7 Days', '15d': '15 Days', '1m': '1 Month', '3m': '3 Months',
+  '6m': '6 Months', '1y': '1 Year', 'custom': 'Custom', 'none': '—'
+};
+
+function calcWarrantyExpiry(saleDateISO, period, customDays) {
+  if (!saleDateISO || period === 'none') return null;
+  const d = new Date(saleDateISO + 'T00:00:00');
+  if (isNaN(d)) return null;
+  switch (period) {
+    case '7d': d.setDate(d.getDate() + 7); break;
+    case '15d': d.setDate(d.getDate() + 15); break;
+    case '1m': d.setMonth(d.getMonth() + 1); break;
+    case '3m': d.setMonth(d.getMonth() + 3); break;
+    case '6m': d.setMonth(d.getMonth() + 6); break;
+    case '1y': d.setFullYear(d.getFullYear() + 1); break;
+    case 'custom': d.setDate(d.getDate() + (Number(customDays) || 0)); break;
+    default: return null;
+  }
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+
+function isWarrantyActive(expiryISO) {
+  if (!expiryISO) return false;
+  return new Date(expiryISO + 'T23:59:59') >= new Date();
+}
+
+/* Compute item subtotal: qty * price - discount */
+function calcItemSubtotal(item) {
+  const qty = Number(item.qty) || 0;
+  const price = Number(item.price) || 0;
+  const discount = Number(item.discount) || 0;
+  const sub = (qty * price) - discount;
+  return sub > 0 ? sub : 0;
+}
+
+/* Compute full invoice totals from items + additional discount + payment info */
+function calcInvoiceTotals(invoice) {
+  const subtotal = invoice.items.reduce((sum, it) => sum + calcItemSubtotal(it), 0);
+  const additionalDiscount = Number(invoice.additionalDiscount) || 0;
+  const grandTotal = Math.max(0, subtotal - additionalDiscount);
+
+  let paid = 0;
+  if (invoice.paymentMethod === 'Mixed') {
+    const b = invoice.paymentBreakdown || {};
+    paid = (Number(b.cash) || 0) + (Number(b.bkash) || 0) + (Number(b.nagad) || 0) + (Number(b.bank) || 0);
+  } else {
+    paid = Number(invoice.paidAmount) || 0;
+  }
+
+  const due = Math.max(0, grandTotal - paid);
+  const change = paid > grandTotal ? paid - grandTotal : 0;
+
+  let status = 'DUE';
+  if (paid >= grandTotal && grandTotal > 0) status = 'PAID';
+  else if (paid > 0 && paid < grandTotal) status = 'PARTIAL';
+  else if (grandTotal === 0) status = 'PAID';
+
+  return { subtotal, additionalDiscount, grandTotal, paid, due, change, status };
+}
+
+/* Sum of all due-payment-history entries (for due invoices) */
+function totalDuePaymentsCollected(invoice) {
+  return (invoice.duePayments || []).reduce((s, p) => s + (Number(p.amount) || 0), 0);
+}
+
+/* ---------------- Print template ---------------- */
+
+function buildInvoicePrintHTML(invoice, customer, shop) {
+  const items = invoice.items || [];
+  const rows = items.map((it, idx) => {
+    const specs = [
+      it.color ? 'Color: ' + escapeHTML(it.color) : '',
+      (it.ram || it.storage) ? 'Mem: ' + escapeHTML([it.ram, it.storage].filter(Boolean).join('/')) : '',
+      it.imei1 ? 'IMEI1: ' + escapeHTML(it.imei1) : '',
+      it.imei2 ? 'IMEI2: ' + escapeHTML(it.imei2) : '',
+      it.serial ? 'SN: ' + escapeHTML(it.serial) : '',
+      it.warrantyType && it.warrantyType !== 'none' ? 'Warranty: ' + escapeHTML(WARRANTY_PERIOD_LABELS[it.warrantyPeriod] || '') + ' (' + escapeHTML(it.warrantyType) + ')' : ''
+    ].filter(Boolean).join(' &nbsp;|&nbsp; ');
+
+    return `<tr>
+      <td class="c-idx">${idx + 1}</td>
+      <td class="c-name">
+        <div class="pname">${escapeHTML(it.name || '')} ${it.model ? '(' + escapeHTML(it.model) + ')' : ''}</div>
+        <div class="pspecs">${specs}</div>
+      </td>
+      <td class="c-qty">${it.qty}</td>
+      <td class="c-price">${formatBDT(it.price)}</td>
+      <td class="c-disc">${formatBDT(it.discount || 0)}</td>
+      <td class="c-sub">${formatBDT(calcItemSubtotal(it))}</td>
+    </tr>`;
+  }).join('');
+
+  const totals = calcInvoiceTotals(invoice);
+  const termsList = (shop.terms && shop.terms.length ? shop.terms : DEFAULT_TERMS)
+    .map(t => `<li>${escapeHTML(t)}</li>`).join('');
+
+  const paymentInfo = invoice.paymentMethod === 'Mixed'
+    ? Object.entries(invoice.paymentBreakdown || {})
+        .filter(([, v]) => Number(v) > 0)
+        .map(([k, v]) => `${k.charAt(0).toUpperCase() + k.slice(1)}: ${formatBDT(v)}`).join(' + ')
+    : (invoice.paymentMethod || 'Cash');
+
+  const logoHTML = shop.logo ? `<img src="${shop.logo}" class="shop-logo" alt="logo">` : '';
+
+  return `
+  <div class="memo-sheet">
+    <div class="memo-header">
+      ${logoHTML}
+      <div class="shop-name">${escapeHTML(shop.name || 'MOBILE SHOP')}</div>
+      <div class="shop-tagline">${escapeHTML(shop.tagline || '')}</div>
+      <div class="shop-contact">
+        ${escapeHTML(shop.address || '')}<br>
+        ${shop.phone ? 'Phone: ' + escapeHTML(shop.phone) : ''} ${shop.whatsapp ? ' &nbsp;|&nbsp; WhatsApp: ' + escapeHTML(shop.whatsapp) : ''}
+        ${shop.email ? ' &nbsp;|&nbsp; ' + escapeHTML(shop.email) : ''}
+        ${shop.license ? '<br>Trade License: ' + escapeHTML(shop.license) : ''}
+      </div>
+    </div>
+    <div class="memo-title">CASH MEMO</div>
+    <div class="memo-meta">
+      <div><strong>Memo No:</strong> ${escapeHTML(invoice.invoiceNo)}</div>
+      <div><strong>Date:</strong> ${formatDatePretty(invoice.date)} &nbsp; <strong>Time:</strong> ${escapeHTML(invoice.time || '')}</div>
+    </div>
+    <div class="memo-customer">
+      <div><strong>Customer:</strong> ${escapeHTML(customer ? customer.name : invoice.customerName || 'Walk-in Customer')}</div>
+      <div><strong>Mobile:</strong> ${escapeHTML(customer ? customer.phone : invoice.customerPhone || '')}</div>
+      ${customer && customer.address ? `<div><strong>Address:</strong> ${escapeHTML(customer.address)}</div>` : ''}
+    </div>
+    <table class="memo-table">
+      <thead>
+        <tr>
+          <th>#</th><th>Product Details</th><th>Qty</th><th>Price</th><th>Discount</th><th>Subtotal</th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>
+    <div class="memo-totals">
+      <div class="row"><span>Subtotal</span><span>${formatBDT(totals.subtotal)}</span></div>
+      <div class="row"><span>Additional Discount</span><span>${formatBDT(totals.additionalDiscount)}</span></div>
+      <div class="row grand"><span>Grand Total</span><span>${formatBDT(totals.grandTotal)}</span></div>
+      <div class="row"><span>Paid (${escapeHTML(paymentInfo)})</span><span>${formatBDT(totals.paid)}</span></div>
+      ${totals.change > 0 ? `<div class="row"><span>Change Returned</span><span>${formatBDT(totals.change)}</span></div>` : ''}
+      <div class="row due"><span>Due Amount</span><span>${formatBDT(totals.due)}</span></div>
+      <div class="row status"><span>Status</span><span class="badge-${totals.status.toLowerCase()}">${totals.status}</span></div>
+    </div>
+    <div class="memo-terms">
+      <div class="terms-title">Terms &amp; Conditions</div>
+      <ol>${termsList}</ol>
+    </div>
+    <div class="memo-signatures">
+      <div class="sig-box"><div class="sig-line"></div>Customer Signature</div>
+      <div class="sig-box"><div class="sig-line"></div>Authorized Signature</div>
+    </div>
+    <div class="memo-footer">Thank you for shopping with us! Please keep this cash memo for warranty and exchange purposes.</div>
+  </div>`;
+}
+
+
+/* ============================================================
+   app.js — UI controller for Mobile Shop Cash Memo System
+   ============================================================ */
+
+let state = {
+  currentView: 'dashboard',
+  editingInvoiceId: null,   // if set, we are editing an existing invoice
+  productRowCount: 0,
+  confirmCallback: null,
+  activePrintInvoiceId: null
+};
+
+let bsPrintModal, bsCustomerPickerModal, bsCustomerModal, bsCustomerProfileModal, bsDuePaymentModal, bsConfirmModal;
+
+document.addEventListener('DOMContentLoaded', () => {
+  bsPrintModal = new bootstrap.Modal(document.getElementById('printModal'));
+  bsCustomerPickerModal = new bootstrap.Modal(document.getElementById('customerPickerModal'));
+  bsCustomerModal = new bootstrap.Modal(document.getElementById('customerModal'));
+  bsCustomerProfileModal = new bootstrap.Modal(document.getElementById('customerProfileModal'));
+  bsDuePaymentModal = new bootstrap.Modal(document.getElementById('duePaymentModal'));
+  bsConfirmModal = new bootstrap.Modal(document.getElementById('confirmModal'));
+
+  seedSampleDataIfNeeded();
+  applyShopBranding();
+  bindGlobalEvents();
+  updateClock();
+  setInterval(updateClock, 1000 * 30);
+  showView('dashboard');
+});
+
+/* ================= SEED SAMPLE DATA ================= */
+function seedSampleDataIfNeeded() {
+  const seeded = localStorage.getItem(DB_KEYS.SEEDED);
+  if (seeded) return;
+
+  Storage.setShop(DEFAULT_SHOP);
+
+  const customers = [
+    { id: Storage.nextCustomerId(), name: 'Md. Rahim Uddin', phone: '01711223344', altPhone: '', address: 'Mirpur, Dhaka', createdAt: todayISO() },
+    { id: Storage.nextCustomerId(), name: 'Shirin Akter', phone: '01822334455', altPhone: '01911223344', address: 'Uttara, Dhaka', createdAt: todayISO() },
+    { id: Storage.nextCustomerId(), name: 'Jahangir Alam', phone: '01933445566', altPhone: '', address: 'Chittagong Road, Narayanganj', createdAt: todayISO() }
+  ];
+  Storage.setCustomers(customers);
+
+  const today = todayISO();
+  const invoices = [
+    {
+      id: uid('inv'), invoiceNo: Storage.nextInvoiceNo(), date: today, time: '11:20 AM',
+      customerId: customers[0].id, customerName: customers[0].name, customerPhone: customers[0].phone,
+      items: [{
+        id: uid('it'), category: 'Smartphone', brand: 'Samsung', name: 'Galaxy A56', model: 'SM-A566',
+        imei1: '350123456789012', imei2: '350123456789013', serial: '', color: 'Black', ram: '8GB', storage: '256GB',
+        warrantyType: 'Official Warranty', warrantyPeriod: '1y', customWarrantyDays: '',
+        warrantyExpiry: calcWarrantyExpiry(today, '1y'), qty: 1, price: 45000, discount: 500
+      }],
+      additionalDiscount: 0, paymentMethod: 'bKash', paidAmount: 45000, paymentBreakdown: null,
+      duePayments: [], notes: ''
+    },
+    {
+      id: uid('inv'), invoiceNo: Storage.nextInvoiceNo(), date: today, time: '02:05 PM',
+      customerId: customers[1].id, customerName: customers[1].name, customerPhone: customers[1].phone,
+      items: [{
+        id: uid('it'), category: 'Smartphone', brand: 'Xiaomi', name: 'Redmi Note 13', model: '2201117TG',
+        imei1: '351987654321098', imei2: '', serial: '', color: 'Blue', ram: '6GB', storage: '128GB',
+        warrantyType: 'Official Warranty', warrantyPeriod: '1y', customWarrantyDays: '',
+        warrantyExpiry: calcWarrantyExpiry(today, '1y'), qty: 1, price: 22500, discount: 0
+      }],
+      additionalDiscount: 500, paymentMethod: 'Cash', paidAmount: 12000, paymentBreakdown: null,
+      duePayments: [], notes: ''
+    },
+    {
+      id: uid('inv'), invoiceNo: Storage.nextInvoiceNo(), date: today, time: '05:40 PM',
+      customerId: customers[2].id, customerName: customers[2].name, customerPhone: customers[2].phone,
+      items: [
+        {
+          id: uid('it'), category: 'Accessories', brand: 'Generic', name: 'Tempered Glass', model: '',
+          imei1: '', imei2: '', serial: '', color: 'Clear', ram: '', storage: '',
+          warrantyType: 'No Warranty', warrantyPeriod: 'none', customWarrantyDays: '',
+          warrantyExpiry: null, qty: 2, price: 150, discount: 0
+        },
+        {
+          id: uid('it'), category: 'Accessories', brand: 'Generic', name: 'Silicone Cover', model: '',
+          imei1: '', imei2: '', serial: '', color: 'Black', ram: '', storage: '',
+          warrantyType: 'No Warranty', warrantyPeriod: 'none', customWarrantyDays: '',
+          warrantyExpiry: null, qty: 1, price: 250, discount: 0
+        }
+      ],
+      additionalDiscount: 0, paymentMethod: 'Cash', paidAmount: 550, paymentBreakdown: null,
+      duePayments: [], notes: ''
+    }
+  ];
+  Storage.setInvoices(invoices);
+  localStorage.setItem(DB_KEYS.SEEDED, '1');
+}
+
+/* ================= GLOBAL EVENTS ================= */
+function bindGlobalEvents() {
+  document.querySelectorAll('[data-view]').forEach(el => {
+    el.addEventListener('click', (e) => {
+      e.preventDefault();
+      showView(el.dataset.view);
+    });
+  });
+
+  document.getElementById('btnOpenSidebar').addEventListener('click', () => toggleSidebar(true));
+  document.getElementById('btnCloseSidebar').addEventListener('click', () => toggleSidebar(false));
+  document.getElementById('sidebarOverlay').addEventListener('click', () => toggleSidebar(false));
+  document.getElementById('btnQuickNew').addEventListener('click', () => showView('newInvoice'));
+
+  // Invoice form
+  document.getElementById('btnAddProduct').addEventListener('click', () => addProductRow());
+  document.getElementById('fAddDiscount').addEventListener('input', recalcInvoiceTotals);
+  document.getElementById('fPaymentMethod').addEventListener('change', onPaymentMethodChange);
+  document.getElementById('fPaidAmount').addEventListener('input', recalcInvoiceTotals);
+  ['fMixCash', 'fMixBkash', 'fMixNagad', 'fMixBank'].forEach(id => {
+    document.getElementById(id).addEventListener('input', recalcInvoiceTotals);
+  });
+  document.getElementById('btnSaveInvoice').addEventListener('click', saveInvoiceFromForm);
+  document.getElementById('btnCancelInvoice').addEventListener('click', () => { resetInvoiceForm(); showView('dashboard'); });
+  document.getElementById('btnPickCustomer').addEventListener('click', openCustomerPicker);
+
+  // Customer picker
+  document.getElementById('pickerSearch').addEventListener('input', renderCustomerPicker);
+
+  // Customer modal
+  document.getElementById('qaAddCustomer').addEventListener('click', () => openCustomerModal());
+  document.getElementById('btnNewCustomerTop').addEventListener('click', () => openCustomerModal());
+  document.getElementById('btnSaveCustomerModal').addEventListener('click', saveCustomerFromModal);
+
+  // Sales history filters
+  document.getElementById('historySearch').addEventListener('input', renderSalesHistory);
+  document.getElementById('historyDateFilter').addEventListener('change', () => {
+    const val = document.getElementById('historyDateFilter').value;
+    document.getElementById('historyFromWrap').classList.toggle('d-none', val !== 'custom');
+    document.getElementById('historyToWrap').classList.toggle('d-none', val !== 'custom');
+    renderSalesHistory();
+  });
+  document.getElementById('historyFrom').addEventListener('change', renderSalesHistory);
+  document.getElementById('historyTo').addEventListener('change', renderSalesHistory);
+  document.getElementById('historyStatusFilter').addEventListener('change', renderSalesHistory);
+
+  // Customers page search
+  document.getElementById('customerSearch').addEventListener('input', renderCustomersPage);
+
+  // IMEI search
+  document.getElementById('imeiSearchInput').addEventListener('input', renderImeiSearch);
+
+  // Settings
+  document.getElementById('sLogoInput').addEventListener('change', handleLogoUpload);
+  document.getElementById('btnSaveSettings').addEventListener('click', saveShopSettings);
+  document.getElementById('btnExportData').addEventListener('click', exportDataFile);
+  document.getElementById('importFileInput').addEventListener('change', importDataFile);
+  document.getElementById('btnClearData').addEventListener('click', () => {
+    openConfirm('This will permanently delete ALL shop data, customers and invoices from this browser. This cannot be undone. Continue?', () => {
+      Storage.clearAll();
+      localStorage.removeItem(DB_KEYS.SEEDED);
+      showToast('All data cleared.', 'success');
+      setTimeout(() => location.reload(), 800);
+    });
+  });
+
+  // Print modal buttons
+  document.getElementById('btnPrintA4').addEventListener('click', () => doPrint('a4'));
+  document.getElementById('btnPrintThermal').addEventListener('click', () => doPrint('thermal'));
+  document.getElementById('btnDownloadPdf').addEventListener('click', () => {
+    showToast('Use "Print" then choose "Save as PDF" in the print dialog.', 'info');
+    doPrint('a4');
+  });
+
+  // Due payment modal
+  document.getElementById('dpAmount').addEventListener('input', updateDuePaymentPreview);
+  document.getElementById('btnConfirmDuePayment').addEventListener('click', confirmDuePayment);
+
+  // Generic confirm modal
+  document.getElementById('btnConfirmYes').addEventListener('click', () => {
+    if (state.confirmCallback) state.confirmCallback();
+    bsConfirmModal.hide();
+  });
+}
+
+function toggleSidebar(open) {
+  document.getElementById('sidebar').classList.toggle('open', open);
+  document.getElementById('sidebarOverlay').classList.toggle('open', open);
+}
+
+function updateClock() {
+  const el = document.getElementById('topDateTime');
+  const d = new Date();
+  el.textContent = formatDatePretty(todayISO()) + '  •  ' + nowTime();
+}
+
+/* ================= VIEW ROUTING ================= */
+function showView(name) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  const target = document.getElementById('view-' + name);
+  if (target) target.classList.add('active');
+  document.querySelectorAll('.sidebar-nav .nav-link').forEach(l => l.classList.toggle('active', l.dataset.view === name));
+  state.currentView = name;
+  toggleSidebar(false);
+
+  if (name === 'dashboard') renderDashboard();
+  if (name === 'newInvoice' && !state.editingInvoiceId) resetInvoiceForm();
+  if (name === 'salesHistory') renderSalesHistory();
+  if (name === 'dueCustomers') renderDueCustomers();
+  if (name === 'customers') renderCustomersPage();
+  if (name === 'imeiSearch') renderImeiSearch();
+  if (name === 'settings') loadSettingsForm();
+
+  window.scrollTo(0, 0);
+}
+
+/* ================= BRANDING ================= */
+function applyShopBranding() {
+  const shop = Storage.getShop();
+  document.getElementById('topShopName').textContent = shop.name || 'Mobile Shop';
+  const logoEl = document.getElementById('topShopLogo');
+  if (shop.logo) { logoEl.src = shop.logo; logoEl.classList.remove('d-none'); }
+  else { logoEl.classList.add('d-none'); }
+}
+
+/* ================= TOAST ================= */
+function showToast(message, type = 'success') {
+  const icons = { success: 'bi-check-circle-fill text-success', danger: 'bi-x-circle-fill text-danger', info: 'bi-info-circle-fill text-primary' };
+  const id = uid('toast');
+  const html = `
+    <div class="toast align-items-center border-0 shadow-sm" role="alert" id="${id}">
+      <div class="d-flex">
+        <div class="toast-body"><i class="bi ${icons[type] || icons.success} me-2"></i>${escapeHTML(message)}</div>
+        <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast"></button>
+      </div>
+    </div>`;
+  document.getElementById('toastContainer').insertAdjacentHTML('beforeend', html);
+  const el = document.getElementById(id);
+  const t = new bootstrap.Toast(el, { delay: 3000 });
+  t.show();
+  el.addEventListener('hidden.bs.toast', () => el.remove());
+}
+
+function openConfirm(message, callback) {
+  document.getElementById('confirmModalBody').textContent = message;
+  state.confirmCallback = callback;
+  bsConfirmModal.show();
+}
+
+/* ================= DASHBOARD ================= */
+function renderDashboard() {
+  document.getElementById('dashDate').textContent = formatDatePretty(todayISO());
+  const invoices = Storage.getInvoices();
+  const customers = Storage.getCustomers();
+  const today = todayISO();
+
+  let todaySales = 0, totalSales = 0, todayCollection = 0, totalDue = 0, totalCollected = 0;
+  invoices.forEach(inv => {
+    const t = calcInvoiceTotals(inv);
+    totalSales += t.grandTotal;
+    totalDue += t.due;
+    totalCollected += t.paid + totalDuePaymentsCollected(inv);
+    if (inv.date === today) {
+      todaySales += t.grandTotal;
+      todayCollection += t.paid;
+    }
+  });
+  invoices.forEach(inv => {
+    (inv.duePayments || []).forEach(p => { if (p.date === today) todayCollection += Number(p.amount) || 0; });
+  });
+
+  const cards = [
+    { label: "Today's Sales", value: formatBDT(todaySales), icon: 'bi-calendar-day', color: '#2563eb' },
+    { label: 'Total Sales', value: formatBDT(totalSales), icon: 'bi-graph-up-arrow', color: '#16a34a' },
+    { label: "Today's Collection", value: formatBDT(todayCollection), icon: 'bi-wallet2', color: '#0ea5e9' },
+    { label: 'Total Due (বাকি)', value: formatBDT(totalDue), icon: 'bi-cash-coin', color: '#dc2626' },
+    { label: 'Total Customers', value: customers.length, icon: 'bi-people', color: '#7c3aed' },
+    { label: 'Total Invoices', value: invoices.length, icon: 'bi-receipt', color: '#d97706' },
+    { label: 'Total Products Sold', value: invoices.reduce((s, i) => s + i.items.reduce((a, it) => a + (Number(it.qty) || 0), 0), 0), icon: 'bi-phone', color: '#0f766e' }
+  ];
+
+  document.getElementById('dashCards').innerHTML = cards.map(c => `
+    <div class="col-6 col-md-4 col-lg-3">
+      <div class="stat-card">
+        <div class="stat-icon" style="background:${c.color}"><i class="bi ${c.icon}"></i></div>
+        <div><div class="stat-label">${c.label}</div><div class="stat-value">${c.value}</div></div>
+      </div>
+    </div>`).join('');
+
+  const recent = [...invoices].sort((a, b) => (b.date + b.time).localeCompare(a.date + a.time)).slice(0, 8);
+  document.getElementById('dashRecentTable').querySelector('tbody').innerHTML = recent.map(inv => {
+    const t = calcInvoiceTotals(inv);
+    return `<tr>
+      <td>${escapeHTML(inv.invoiceNo)}</td>
+      <td>${escapeHTML(inv.customerName)}</td>
+      <td>${formatBDT(t.grandTotal)}</td>
+      <td>${formatBDT(t.paid)}</td>
+      <td>${formatBDT(t.due)}</td>
+      <td>${statusBadge(t.status)}</td>
+      <td><button class="btn btn-sm btn-outline-primary" onclick="openPrintPreview('${inv.id}')"><i class="bi bi-eye"></i></button></td>
+    </tr>`;
+  }).join('') || `<tr><td colspan="7" class="text-center text-muted py-3">No invoices yet</td></tr>`;
+}
+
+function statusBadge(status) {
+  const cls = status === 'PAID' ? 'badge-paid' : status === 'PARTIAL' ? 'badge-partial' : 'badge-due';
+  return `<span class="badge-status ${cls}">${status}</span>`;
+}
+
+/* ================= NEW / EDIT INVOICE ================= */
+function resetInvoiceForm() {
+  state.editingInvoiceId = null;
+  state.productRowCount = 0;
+  document.getElementById('invoiceFormTitle').textContent = 'নতুন ক্যাশ মেমো — New Cash Memo';
+  document.getElementById('fInvoiceNo').value = '(will be generated on save)';
+  document.getElementById('fDate').value = todayISO();
+  document.getElementById('fTime').value = nowTime();
+  document.getElementById('fStatus').value = 'DUE';
+  document.getElementById('fCustomerId').value = '';
+  document.getElementById('fCustName').value = '';
+  document.getElementById('fCustPhone').value = '';
+  document.getElementById('fCustAltPhone').value = '';
+  document.getElementById('fCustAddress').value = '';
+  document.getElementById('productRows').innerHTML = '';
+  document.getElementById('fAddDiscount').value = 0;
+  document.getElementById('fPaymentMethod').value = 'Cash';
+  document.getElementById('fPaidAmount').value = 0;
+  ['fMixCash', 'fMixBkash', 'fMixNagad', 'fMixBank'].forEach(id => document.getElementById(id).value = 0);
+  onPaymentMethodChange();
+  addProductRow();
+  recalcInvoiceTotals();
+}
+
+function addProductRow(data = {}) {
+  state.productRowCount++;
+  const rowId = 'row_' + state.productRowCount + '_' + uid();
+  const wrap = document.createElement('div');
+  wrap.className = 'product-row';
+  wrap.dataset.rowid = rowId;
+  wrap.innerHTML = `
+    <div class="row-title">
+      <span>Product #<span class="row-index"></span></span>
+      <button type="button" class="btn-remove-row" title="Remove"><i class="bi bi-trash"></i></button>
+    </div>
+    <div class="row g-2">
+      <div class="col-6 col-md-3">
+        <label class="form-label">Category</label>
+        <select class="form-select form-select-sm f-category">
+          <option>Smartphone</option><option>Feature Phone</option><option>Tablet</option>
+          <option>Accessories</option><option>Spare Parts</option><option>Other</option>
+        </select>
+      </div>
+      <div class="col-6 col-md-3"><label class="form-label">Brand</label><input class="form-control form-control-sm f-brand" value="${escapeHTML(data.brand || '')}"></div>
+      <div class="col-6 col-md-3"><label class="form-label">Product Name <span class="req">*</span></label><input class="form-control form-control-sm f-name" value="${escapeHTML(data.name || '')}"></div>
+      <div class="col-6 col-md-3"><label class="form-label">Model</label><input class="form-control form-control-sm f-model" value="${escapeHTML(data.model || '')}"></div>
+
+      <div class="col-6 col-md-3"><label class="form-label">IMEI 1</label><input class="form-control form-control-sm f-imei1" value="${escapeHTML(data.imei1 || '')}"></div>
+      <div class="col-6 col-md-3"><label class="form-label">IMEI 2</label><input class="form-control form-control-sm f-imei2" value="${escapeHTML(data.imei2 || '')}"></div>
+      <div class="col-6 col-md-3"><label class="form-label">Serial No.</label><input class="form-control form-control-sm f-serial" value="${escapeHTML(data.serial || '')}"></div>
+      <div class="col-6 col-md-3"><label class="form-label">Color</label><input class="form-control form-control-sm f-color" value="${escapeHTML(data.color || '')}"></div>
+
+      <div class="col-6 col-md-2"><label class="form-label">RAM</label><input class="form-control form-control-sm f-ram" placeholder="e.g. 8GB" value="${escapeHTML(data.ram || '')}"></div>
+      <div class="col-6 col-md-2"><label class="form-label">Storage</label><input class="form-control form-control-sm f-storage" placeholder="e.g. 256GB" value="${escapeHTML(data.storage || '')}"></div>
+      <div class="col-6 col-md-3">
+        <label class="form-label">Warranty Type</label>
+        <select class="form-select form-select-sm f-warrantytype">
+          <option>Official Warranty</option><option>Shop Warranty</option><option>No Warranty</option>
+        </select>
+      </div>
+      <div class="col-6 col-md-3">
+        <label class="form-label">Warranty Period</label>
+        <select class="form-select form-select-sm f-warrantyperiod">
+          <option value="7d">7 Days</option><option value="15d">15 Days</option><option value="1m">1 Month</option>
+          <option value="3m">3 Months</option><option value="6m">6 Months</option><option value="1y" selected>1 Year</option>
+          <option value="custom">Custom</option><option value="none">No Warranty</option>
+        </select>
+      </div>
+      <div class="col-6 col-md-2 f-customdays-wrap d-none"><label class="form-label">Custom Days</label><input type="number" min="0" class="form-control form-control-sm f-customdays" value="0"></div>
+
+      <div class="col-6 col-md-2"><label class="form-label">Qty</label><input type="number" min="1" class="form-control form-control-sm f-qty" value="${data.qty || 1}"></div>
+      <div class="col-6 col-md-3"><label class="form-label">Unit Price (৳)</label><input type="number" min="0" class="form-control form-control-sm f-price" value="${data.price || 0}"></div>
+      <div class="col-6 col-md-3"><label class="form-label">Discount (৳)</label><input type="number" min="0" class="form-control form-control-sm f-discount" value="${data.discount || 0}"></div>
+      <div class="col-6 col-md-2 d-flex align-items-end">
+        <span class="subtotal-badge w-100 text-center f-subtotal-display">৳0</span>
+      </div>
+    </div>`;
+  document.getElementById('productRows').appendChild(wrap);
+
+  wrap.querySelector('.btn-remove-row').addEventListener('click', () => { wrap.remove(); renumberRows(); recalcInvoiceTotals(); });
+  wrap.querySelectorAll('input, select').forEach(el => el.addEventListener('input', recalcInvoiceTotals));
+  wrap.querySelector('.f-warrantyperiod').addEventListener('change', (e) => {
+    wrap.querySelector('.f-customdays-wrap').classList.toggle('d-none', e.target.value !== 'custom');
+  });
+
+  if (data.category) wrap.querySelector('.f-category').value = data.category;
+  if (data.warrantyType) wrap.querySelector('.f-warrantytype').value = data.warrantyType;
+  if (data.warrantyPeriod) {
+    wrap.querySelector('.f-warrantyperiod').value = data.warrantyPeriod;
+    wrap.querySelector('.f-customdays-wrap').classList.toggle('d-none', data.warrantyPeriod !== 'custom');
+  }
+  if (data.customWarrantyDays) wrap.querySelector('.f-customdays').value = data.customWarrantyDays;
+
+  renumberRows();
+}
+
+function renumberRows() {
+  document.querySelectorAll('#productRows .product-row').forEach((row, idx) => {
+    row.querySelector('.row-index').textContent = idx + 1;
+  });
+}
+
+function readItemFromRow(row) {
+  return {
+    id: row.dataset.itemid || uid('it'),
+    category: row.querySelector('.f-category').value,
+    brand: row.querySelector('.f-brand').value.trim(),
+    name: row.querySelector('.f-name').value.trim(),
+    model: row.querySelector('.f-model').value.trim(),
+    imei1: row.querySelector('.f-imei1').value.trim(),
+    imei2: row.querySelector('.f-imei2').value.trim(),
+    serial: row.querySelector('.f-serial').value.trim(),
+    color: row.querySelector('.f-color').value.trim(),
+    ram: row.querySelector('.f-ram').value.trim(),
+    storage: row.querySelector('.f-storage').value.trim(),
+    warrantyType: row.querySelector('.f-warrantytype').value,
+    warrantyPeriod: row.querySelector('.f-warrantyperiod').value,
+    customWarrantyDays: row.querySelector('.f-customdays').value,
+    qty: Number(row.querySelector('.f-qty').value) || 0,
+    price: Number(row.querySelector('.f-price').value) || 0,
+    discount: Number(row.querySelector('.f-discount').value) || 0
+  };
+}
+
+function onPaymentMethodChange() {
+  const method = document.getElementById('fPaymentMethod').value;
+  const mixed = method === 'Mixed';
+  document.getElementById('singlePaymentRow').classList.toggle('d-none', mixed);
+  document.getElementById('mixedPaymentRow').classList.toggle('d-none', !mixed);
+  recalcInvoiceTotals();
+}
+
+function recalcInvoiceTotals() {
+  let subtotal = 0;
+  document.querySelectorAll('#productRows .product-row').forEach(row => {
+    const item = readItemFromRow(row);
+    const sub = calcItemSubtotal(item);
+    row.querySelector('.f-subtotal-display').textContent = formatBDT(sub);
+    subtotal += sub;
+  });
+
+  const addDiscount = Number(document.getElementById('fAddDiscount').value) || 0;
+  const grandTotal = Math.max(0, subtotal - addDiscount);
+
+  const method = document.getElementById('fPaymentMethod').value;
+  let paid = 0;
+  if (method === 'Mixed') {
+    paid = ['fMixCash', 'fMixBkash', 'fMixNagad', 'fMixBank'].reduce((s, id) => s + (Number(document.getElementById(id).value) || 0), 0);
+  } else {
+    paid = Number(document.getElementById('fPaidAmount').value) || 0;
+  }
+
+  const due = Math.max(0, grandTotal - paid);
+  const change = paid > grandTotal ? paid - grandTotal : 0;
+  let status = 'DUE';
+  if (paid >= grandTotal && grandTotal > 0) status = 'PAID';
+  else if (paid > 0 && paid < grandTotal) status = 'PARTIAL';
+  else if (grandTotal === 0) status = 'PAID';
+
+  document.getElementById('fSubtotal').value = formatBDT(subtotal);
+  document.getElementById('fGrandTotal').value = formatBDT(grandTotal);
+  document.getElementById('fTotalPaid').value = formatBDT(paid);
+  document.getElementById('fDueAmount').value = formatBDT(due);
+  document.getElementById('fChangeAmount').value = formatBDT(change);
+  document.getElementById('fStatus').value = status;
+}
+
+function saveInvoiceFromForm() {
+  const custName = document.getElementById('fCustName').value.trim();
+  const custPhone = document.getElementById('fCustPhone').value.trim();
+  const rows = [...document.querySelectorAll('#productRows .product-row')];
+
+  // ---- validation ----
+  if (!custName) return showToast('Customer name is required.', 'danger');
+  if (!custPhone) return showToast('Customer mobile number is required.', 'danger');
+  if (!isValidBDPhone(custPhone)) return showToast('Please enter a valid Bangladeshi mobile number.', 'danger');
+  if (rows.length === 0) return showToast('Please add at least one product.', 'danger');
+
+  const items = [];
+  for (const row of rows) {
+    const item = readItemFromRow(row);
+    if (!item.name) return showToast('Every product row needs a Product Name.', 'danger');
+    if (item.price < 0 || item.qty <= 0 || item.discount < 0) return showToast('Price, quantity and discount must not be negative.', 'danger');
+    item.warrantyExpiry = calcWarrantyExpiry(document.getElementById('fDate').value, item.warrantyPeriod, item.customWarrantyDays);
+    items.push(item);
+  }
+
+  // duplicate IMEI warning (within this invoice + across other invoices)
+  const allImeis = items.flatMap(i => [i.imei1, i.imei2]).filter(Boolean);
+  const dupInSameInvoice = allImeis.some((v, i) => allImeis.indexOf(v) !== i);
+  if (dupInSameInvoice) return showToast('Duplicate IMEI found within this invoice. Please check.', 'danger');
+
+  const existingInvoices = Storage.getInvoices().filter(i => i.id !== state.editingInvoiceId);
+  for (const inv of existingInvoices) {
+    for (const it of inv.items) {
+      if ((it.imei1 && allImeis.includes(it.imei1)) || (it.imei2 && allImeis.includes(it.imei2))) {
+        showToast('Warning: One of these IMEIs already exists in invoice ' + inv.invoiceNo + '. Saving anyway.', 'info');
+      }
+    }
+  }
+
+  const method = document.getElementById('fPaymentMethod').value;
+  let paidAmount = 0, paymentBreakdown = null;
+  if (method === 'Mixed') {
+    paymentBreakdown = {
+      cash: Number(document.getElementById('fMixCash').value) || 0,
+      bkash: Number(document.getElementById('fMixBkash').value) || 0,
+      nagad: Number(document.getElementById('fMixNagad').value) || 0,
+      bank: Number(document.getElementById('fMixBank').value) || 0
+    };
+  } else {
+    paidAmount = Number(document.getElementById('fPaidAmount').value) || 0;
+    if (paidAmount < 0) return showToast('Paid amount cannot be negative.', 'danger');
+  }
+
+  // resolve / create customer
+  let customerId = document.getElementById('fCustomerId').value;
+  const custAlt = document.getElementById('fCustAltPhone').value.trim();
+  const custAddress = document.getElementById('fCustAddress').value.trim();
+  if (!customerId) {
+    const existing = Storage.getCustomers().find(c => c.phone === custPhone);
+    if (existing) {
+      customerId = existing.id;
+      existing.name = custName; existing.altPhone = custAlt || existing.altPhone; existing.address = custAddress || existing.address;
+      Storage.saveCustomer(existing);
+    } else {
+      const newCust = { id: Storage.nextCustomerId(), name: custName, phone: custPhone, altPhone: custAlt, address: custAddress, createdAt: todayISO() };
+      Storage.saveCustomer(newCust);
+      customerId = newCust.id;
+    }
+  } else {
+    const cust = Storage.findCustomer(customerId);
+    if (cust) {
+      cust.name = custName; cust.phone = custPhone; cust.altPhone = custAlt; cust.address = custAddress;
+      Storage.saveCustomer(cust);
+    }
+  }
+
+  const invoice = {
+    id: state.editingInvoiceId || uid('inv'),
+    invoiceNo: state.editingInvoiceId ? Storage.findInvoice(state.editingInvoiceId).invoiceNo : Storage.nextInvoiceNo(),
+    date: document.getElementById('fDate').value || todayISO(),
+    time: document.getElementById('fTime').value || nowTime(),
+    customerId, customerName: custName, customerPhone: custPhone,
+    items,
+    additionalDiscount: Number(document.getElementById('fAddDiscount').value) || 0,
+    paymentMethod: method,
+    paidAmount, paymentBreakdown,
+    duePayments: state.editingInvoiceId ? (Storage.findInvoice(state.editingInvoiceId).duePayments || []) : [],
+    notes: ''
+  };
+
+  Storage.saveInvoice(invoice);
+  showToast(state.editingInvoiceId ? 'Cash memo updated successfully' : 'Cash memo created successfully', 'success');
+  state.editingInvoiceId = null;
+  openPrintPreview(invoice.id);
+  showView('salesHistory');
+}
+
+function loadInvoiceIntoForm(invoice) {
+  state.editingInvoiceId = invoice.id;
+  document.getElementById('invoiceFormTitle').textContent = 'Edit Cash Memo — ' + invoice.invoiceNo;
+  document.getElementById('fInvoiceNo').value = invoice.invoiceNo;
+  document.getElementById('fDate').value = invoice.date;
+  document.getElementById('fTime').value = invoice.time;
+  document.getElementById('fCustomerId').value = invoice.customerId || '';
+  document.getElementById('fCustName').value = invoice.customerName || '';
+  document.getElementById('fCustPhone').value = invoice.customerPhone || '';
+  const cust = Storage.findCustomer(invoice.customerId);
+  document.getElementById('fCustAltPhone').value = cust ? cust.altPhone : '';
+  document.getElementById('fCustAddress').value = cust ? cust.address : '';
+
+  document.getElementById('productRows').innerHTML = '';
+  state.productRowCount = 0;
+  invoice.items.forEach(it => addProductRow(it));
+
+  document.getElementById('fAddDiscount').value = invoice.additionalDiscount || 0;
+  document.getElementById('fPaymentMethod').value = invoice.paymentMethod;
+  onPaymentMethodChange();
+  if (invoice.paymentMethod === 'Mixed' && invoice.paymentBreakdown) {
+    document.getElementById('fMixCash').value = invoice.paymentBreakdown.cash || 0;
+    document.getElementById('fMixBkash').value = invoice.paymentBreakdown.bkash || 0;
+    document.getElementById('fMixNagad').value = invoice.paymentBreakdown.nagad || 0;
+    document.getElementById('fMixBank').value = invoice.paymentBreakdown.bank || 0;
+  } else {
+    document.getElementById('fPaidAmount').value = invoice.paidAmount || 0;
+  }
+  recalcInvoiceTotals();
+  showView('newInvoice');
+}
+
+/* ================= CUSTOMER PICKER ================= */
+function openCustomerPicker() {
+  renderCustomerPicker();
+  bsCustomerPickerModal.show();
+}
+function renderCustomerPicker() {
+  const q = (document.getElementById('pickerSearch').value || '').toLowerCase();
+  const list = Storage.getCustomers().filter(c => !q || c.name.toLowerCase().includes(q) || c.phone.includes(q));
+  document.getElementById('pickerTableBody').innerHTML = list.map(c => `
+    <tr>
+      <td>${escapeHTML(c.name)}</td><td>${escapeHTML(c.phone)}</td><td>${escapeHTML(c.address || '')}</td>
+      <td><button class="btn btn-sm btn-primary" onclick="selectCustomerForInvoice('${c.id}')">Select</button></td>
+    </tr>`).join('') || `<tr><td colspan="4" class="text-center text-muted py-3">No customers found</td></tr>`;
+}
+function selectCustomerForInvoice(id) {
+  const c = Storage.findCustomer(id);
+  if (!c) return;
+  document.getElementById('fCustomerId').value = c.id;
+  document.getElementById('fCustName').value = c.name;
+  document.getElementById('fCustPhone').value = c.phone;
+  document.getElementById('fCustAltPhone').value = c.altPhone || '';
+  document.getElementById('fCustAddress').value = c.address || '';
+  bsCustomerPickerModal.hide();
+  showToast('Customer selected: ' + c.name, 'success');
+}
+
+/* ================= CUSTOMER MODAL (add/edit) ================= */
+function openCustomerModal(customerId = null) {
+  const c = customerId ? Storage.findCustomer(customerId) : null;
+  document.getElementById('customerModalTitle').textContent = c ? 'Edit Customer' : 'Add Customer';
+  document.getElementById('cmCustomerId').value = c ? c.id : '';
+  document.getElementById('cmName').value = c ? c.name : '';
+  document.getElementById('cmPhone').value = c ? c.phone : '';
+  document.getElementById('cmAltPhone').value = c ? c.altPhone : '';
+  document.getElementById('cmAddress').value = c ? c.address : '';
+  bsCustomerModal.show();
+}
+function saveCustomerFromModal() {
+  const name = document.getElementById('cmName').value.trim();
+  const phone = document.getElementById('cmPhone').value.trim();
+  if (!name) return showToast('Customer name is required.', 'danger');
+  if (!phone || !isValidBDPhone(phone)) return showToast('Please enter a valid Bangladeshi mobile number.', 'danger');
+
+  let id = document.getElementById('cmCustomerId').value;
+  const customer = {
+    id: id || Storage.nextCustomerId(),
+    name, phone,
+    altPhone: document.getElementById('cmAltPhone').value.trim(),
+    address: document.getElementById('cmAddress').value.trim(),
+    createdAt: id ? Storage.findCustomer(id).createdAt : todayISO()
+  };
+  Storage.saveCustomer(customer);
+  showToast('Customer saved successfully', 'success');
+  bsCustomerModal.hide();
+  if (state.currentView === 'customers') renderCustomersPage();
+}
+
+/* ================= SALES HISTORY ================= */
+function getFilteredInvoices() {
+  const q = (document.getElementById('historySearch').value || '').toLowerCase();
+  const dateFilter = document.getElementById('historyDateFilter').value;
+  const statusFilter = document.getElementById('historyStatusFilter').value;
+  const from = document.getElementById('historyFrom').value;
+  const to = document.getElementById('historyTo').value;
+
+  const today = new Date(); today.setHours(0,0,0,0);
+  const todayStr = todayISO();
+  const yesterday = new Date(today); yesterday.setDate(yesterday.getDate() - 1);
+  const yesterdayStr = yesterday.getFullYear() + '-' + String(yesterday.getMonth()+1).padStart(2,'0') + '-' + String(yesterday.getDate()).padStart(2,'0');
+  const weekStart = new Date(today); weekStart.setDate(weekStart.getDate() - weekStart.getDay());
+  const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+
+  return Storage.getInvoices().filter(inv => {
+    const t = calcInvoiceTotals(inv);
+    if (statusFilter !== 'all' && t.status !== statusFilter) return false;
+
+    if (q) {
+      const imeis = inv.items.flatMap(i => [i.imei1, i.imei2]).join(' ').toLowerCase();
+      const hay = (inv.invoiceNo + ' ' + inv.customerName + ' ' + inv.customerPhone + ' ' + imeis).toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
+
+    if (dateFilter === 'today' && inv.date !== todayStr) return false;
+    if (dateFilter === 'yesterday' && inv.date !== yesterdayStr) return false;
+    if (dateFilter === 'week' && new Date(inv.date) < weekStart) return false;
+    if (dateFilter === 'month' && new Date(inv.date) < monthStart) return false;
+    if (dateFilter === 'custom') {
+      if (from && inv.date < from) return false;
+      if (to && inv.date > to) return false;
+    }
+    return true;
+  }).sort((a, b) => (b.date + b.time).localeCompare(a.date + a.time));
+}
+
+function renderSalesHistory() {
+  const list = getFilteredInvoices();
+  document.getElementById('historyTable').querySelector('tbody').innerHTML = list.map(inv => {
+    const t = calcInvoiceTotals(inv);
+    return `<tr>
+      <td>${escapeHTML(inv.invoiceNo)}</td>
+      <td>${formatDatePretty(inv.date)}</td>
+      <td>${escapeHTML(inv.customerName)}</td>
+      <td>${escapeHTML(inv.customerPhone)}</td>
+      <td>${formatBDT(t.grandTotal)}</td>
+      <td>${formatBDT(t.paid)}</td>
+      <td>${formatBDT(t.due)}</td>
+      <td>${statusBadge(t.status)}</td>
+      <td class="text-nowrap">
+        <button class="btn btn-sm btn-outline-primary" title="View/Print" onclick="openPrintPreview('${inv.id}')"><i class="bi bi-eye"></i></button>
+        <button class="btn btn-sm btn-outline-secondary" title="Edit" onclick="editInvoice('${inv.id}')"><i class="bi bi-pencil"></i></button>
+        <button class="btn btn-sm btn-outline-danger" title="Delete" onclick="deleteInvoiceConfirm('${inv.id}')"><i class="bi bi-trash"></i></button>
+      </td>
+    </tr>`;
+  }).join('') || `<tr><td colspan="9" class="text-center text-muted py-3">No invoices found</td></tr>`;
+}
+
+function editInvoice(id) {
+  const inv = Storage.findInvoice(id);
+  if (!inv) return;
+  loadInvoiceIntoForm(inv);
+}
+function deleteInvoiceConfirm(id) {
+  openConfirm('Delete this invoice permanently? This cannot be undone.', () => {
+    Storage.deleteInvoice(id);
+    showToast('Invoice deleted successfully', 'success');
+    renderSalesHistory(); renderDashboard(); renderDueCustomers();
+  });
+}
+
+/* ================= DUE CUSTOMERS ================= */
+function renderDueCustomers() {
+  const dueList = Storage.getInvoices().filter(inv => calcInvoiceTotals(inv).due > 0)
+    .sort((a, b) => (b.date + b.time).localeCompare(a.date + a.time));
+
+  document.getElementById('dueTable').querySelector('tbody').innerHTML = dueList.map(inv => {
+    const t = calcInvoiceTotals(inv);
+    return `<tr>
+      <td>${escapeHTML(inv.customerName)}</td>
+      <td>${escapeHTML(inv.customerPhone)}</td>
+      <td>${escapeHTML(inv.invoiceNo)}</td>
+      <td>${formatBDT(t.grandTotal)}</td>
+      <td>${formatBDT(t.paid)}</td>
+      <td class="text-danger fw-bold">${formatBDT(t.due)}</td>
+      <td>${formatDatePretty(inv.date)}</td>
+      <td class="text-nowrap">
+        <button class="btn btn-sm btn-outline-primary" onclick="openPrintPreview('${inv.id}')"><i class="bi bi-eye"></i></button>
+        <button class="btn btn-sm btn-success" onclick="openDuePaymentModal('${inv.id}')"><i class="bi bi-cash"></i> Add Payment</button>
+        <button class="btn btn-sm btn-outline-danger" onclick="deleteInvoiceConfirm('${inv.id}')"><i class="bi bi-trash"></i></button>
+      </td>
+    </tr>`;
+  }).join('') || `<tr><td colspan="8" class="text-center text-muted py-3">No due customers 🎉</td></tr>`;
+}
+
+function openDuePaymentModal(invoiceId) {
+  const inv = Storage.findInvoice(invoiceId);
+  if (!inv) return;
+  const t = calcInvoiceTotals(inv);
+  document.getElementById('dpInvoiceId').value = inv.id;
+  document.getElementById('dpInvoiceNo').textContent = inv.invoiceNo;
+  document.getElementById('dpPreviousDue').textContent = formatBDT(t.due);
+  document.getElementById('dpAmount').value = '';
+  document.getElementById('dpMethod').value = 'Cash';
+  document.getElementById('dpPreview').textContent = '';
+  bsDuePaymentModal.show();
+}
+function updateDuePaymentPreview() {
+  const invoiceId = document.getElementById('dpInvoiceId').value;
+  const inv = Storage.findInvoice(invoiceId);
+  if (!inv) return;
+  const t = calcInvoiceTotals(inv);
+  const amt = Number(document.getElementById('dpAmount').value) || 0;
+  const remaining = Math.max(0, t.due - amt);
+  document.getElementById('dpPreview').textContent =
+    `Previous Due: ${formatBDT(t.due)}  →  Payment: ${formatBDT(amt)}  →  Remaining Due: ${formatBDT(remaining)}` +
+    (amt > t.due ? '  (Amount exceeds due; will be capped at due amount)' : '');
+}
+function confirmDuePayment() {
+  const invoiceId = document.getElementById('dpInvoiceId').value;
+  const inv = Storage.findInvoice(invoiceId);
+  if (!inv) return;
+  const t = calcInvoiceTotals(inv);
+  let amt = Number(document.getElementById('dpAmount').value) || 0;
+  if (amt <= 0) return showToast('Enter a valid payment amount.', 'danger');
+  if (amt > t.due) amt = t.due;
+
+  inv.duePayments = inv.duePayments || [];
+  inv.duePayments.push({ date: todayISO(), amount: amt, method: document.getElementById('dpMethod').value, remainingDue: Math.max(0, t.due - amt) });
+
+  // apply payment to the base paid figures
+  if (inv.paymentMethod === 'Mixed') {
+    inv.paymentBreakdown = inv.paymentBreakdown || { cash: 0, bkash: 0, nagad: 0, bank: 0 };
+    inv.paymentBreakdown.cash = (inv.paymentBreakdown.cash || 0) + amt; // record extra collection under cash bucket by default
+  } else {
+    inv.paidAmount = (Number(inv.paidAmount) || 0) + amt;
+  }
+
+  Storage.saveInvoice(inv);
+  showToast('Payment added successfully', 'success');
+  bsDuePaymentModal.hide();
+  renderDueCustomers(); renderDashboard(); renderSalesHistory();
+}
+
+/* ================= CUSTOMERS PAGE ================= */
+function computeCustomerStats(customerId) {
+  const invoices = Storage.getInvoices().filter(i => i.customerId === customerId);
+  let totalPurchase = 0, totalPaid = 0, totalDue = 0;
+  invoices.forEach(inv => {
+    const t = calcInvoiceTotals(inv);
+    totalPurchase += t.grandTotal;
+    totalPaid += t.paid + totalDuePaymentsCollected(inv);
+    totalDue += t.due;
+  });
+  return { invoices, totalPurchase, totalPaid, totalDue };
+}
+
+function renderCustomersPage() {
+  const q = (document.getElementById('customerSearch').value || '').toLowerCase();
+  const customers = Storage.getCustomers().filter(c => !q || c.name.toLowerCase().includes(q) || c.phone.includes(q));
+  document.getElementById('customersTable').querySelector('tbody').innerHTML = customers.map(c => {
+    const stats = computeCustomerStats(c.id);
+    return `<tr>
+      <td>${escapeHTML(c.id)}</td>
+      <td class="fw-semibold">${escapeHTML(c.name)}</td>
+      <td>${escapeHTML(c.phone)}</td>
+      <td>${escapeHTML(c.address || '')}</td>
+      <td>${formatBDT(stats.totalPurchase)}</td>
+      <td>${formatBDT(stats.totalPaid)}</td>
+      <td class="${stats.totalDue > 0 ? 'text-danger fw-bold' : ''}">${formatBDT(stats.totalDue)}</td>
+      <td class="text-nowrap">
+        <button class="btn btn-sm btn-outline-primary" onclick="openCustomerProfile('${c.id}')"><i class="bi bi-person-lines-fill"></i></button>
+        <button class="btn btn-sm btn-outline-secondary" onclick="openCustomerModal('${c.id}')"><i class="bi bi-pencil"></i></button>
+        <button class="btn btn-sm btn-outline-danger" onclick="deleteCustomerConfirm('${c.id}')"><i class="bi bi-trash"></i></button>
+      </td>
+    </tr>`;
+  }).join('') || `<tr><td colspan="8" class="text-center text-muted py-3">No customers found</td></tr>`;
+}
+
+function deleteCustomerConfirm(id) {
+  const stats = computeCustomerStats(id);
+  if (stats.invoices.length > 0) {
+    showToast('Cannot delete a customer with existing invoices. Delete their invoices first.', 'danger');
+    return;
+  }
+  openConfirm('Delete this customer permanently?', () => {
+    Storage.deleteCustomer(id);
+    showToast('Customer deleted successfully', 'success');
+    renderCustomersPage();
+  });
+}
+
+function openCustomerProfile(id) {
+  const c = Storage.findCustomer(id);
+  if (!c) return;
+  const stats = computeCustomerStats(id);
+  document.getElementById('profileCustomerName').textContent = c.name + ' — ' + c.phone;
+
+  const invoiceRows = stats.invoices.sort((a,b)=>(b.date+b.time).localeCompare(a.date+a.time)).map(inv => {
+    const t = calcInvoiceTotals(inv);
+    return `<tr>
+      <td>${escapeHTML(inv.invoiceNo)}</td><td>${formatDatePretty(inv.date)}</td>
+      <td>${formatBDT(t.grandTotal)}</td><td>${formatBDT(t.paid)}</td><td>${formatBDT(t.due)}</td>
+      <td>${statusBadge(t.status)}</td>
+      <td><button class="btn btn-sm btn-outline-primary" onclick="openPrintPreview('${inv.id}')"><i class="bi bi-eye"></i></button></td>
+    </tr>`;
+  }).join('') || `<tr><td colspan="7" class="text-center text-muted py-2">No invoices</td></tr>`;
+
+  const paymentHistory = [];
+  stats.invoices.forEach(inv => (inv.duePayments || []).forEach(p => paymentHistory.push({ ...p, invoiceNo: inv.invoiceNo })));
+  const paymentRows = paymentHistory.sort((a,b)=>b.date.localeCompare(a.date)).map(p => `
+    <tr><td>${formatDatePretty(p.date)}</td><td>${escapeHTML(p.invoiceNo)}</td><td>${formatBDT(p.amount)}</td><td>${escapeHTML(p.method)}</td><td>${formatBDT(p.remainingDue)}</td></tr>
+  `).join('') || `<tr><td colspan="5" class="text-center text-muted py-2">No due payments recorded</td></tr>`;
+
+  document.getElementById('profileBody').innerHTML = `
+    <div class="row g-2 mb-3">
+      <div class="col-4"><div class="stat-card"><div><div class="stat-label">Total Purchase</div><div class="stat-value">${formatBDT(stats.totalPurchase)}</div></div></div></div>
+      <div class="col-4"><div class="stat-card"><div><div class="stat-label">Total Paid</div><div class="stat-value">${formatBDT(stats.totalPaid)}</div></div></div></div>
+      <div class="col-4"><div class="stat-card"><div><div class="stat-label">Current Due</div><div class="stat-value text-danger">${formatBDT(stats.totalDue)}</div></div></div></div>
+    </div>
+    <h6 class="fw-bold">Invoice / Purchase History</h6>
+    <div class="table-responsive mb-3"><table class="table table-sm"><thead><tr><th>Invoice</th><th>Date</th><th>Total</th><th>Paid</th><th>Due</th><th>Status</th><th></th></tr></thead><tbody>${invoiceRows}</tbody></table></div>
+    <h6 class="fw-bold">Due Payment History</h6>
+    <div class="table-responsive"><table class="table table-sm"><thead><tr><th>Date</th><th>Invoice</th><th>Amount</th><th>Method</th><th>Remaining Due</th></tr></thead><tbody>${paymentRows}</tbody></table></div>
+  `;
+  bsCustomerProfileModal.show();
+}
+
+/* ================= IMEI SEARCH ================= */
+function renderImeiSearch() {
+  const q = (document.getElementById('imeiSearchInput').value || '').trim();
+  const resultsEl = document.getElementById('imeiResults');
+  if (!q) { resultsEl.innerHTML = ''; return; }
+
+  const matches = [];
+  Storage.getInvoices().forEach(inv => {
+    inv.items.forEach(it => {
+      if ((it.imei1 && it.imei1.includes(q)) || (it.imei2 && it.imei2.includes(q)) || (it.serial && it.serial.includes(q))) {
+        matches.push({ inv, it });
+      }
+    });
+  });
+
+  if (matches.length === 0) {
+    resultsEl.innerHTML = `<div class="panel text-center text-muted py-4">No matching IMEI / Serial found.</div>`;
+    return;
+  }
+
+  resultsEl.innerHTML = matches.map(({ inv, it }) => {
+    const active = isWarrantyActive(it.warrantyExpiry);
+    return `<div class="panel mb-3">
+      <div class="row g-2">
+        <div class="col-md-6">
+          <div><strong>Product:</strong> ${escapeHTML(it.brand)} ${escapeHTML(it.name)} ${it.model ? '(' + escapeHTML(it.model) + ')' : ''}</div>
+          <div><strong>IMEI 1:</strong> ${escapeHTML(it.imei1) || '—'} &nbsp; <strong>IMEI 2:</strong> ${escapeHTML(it.imei2) || '—'}</div>
+          <div><strong>Serial:</strong> ${escapeHTML(it.serial) || '—'}</div>
+          <div><strong>Sale Date:</strong> ${formatDatePretty(inv.date)} &nbsp; <strong>Invoice:</strong> ${escapeHTML(inv.invoiceNo)}</div>
+        </div>
+        <div class="col-md-6">
+          <div><strong>Customer:</strong> ${escapeHTML(inv.customerName)} (${escapeHTML(inv.customerPhone)})</div>
+          <div><strong>Price:</strong> ${formatBDT(it.price)}</div>
+          <div><strong>Warranty:</strong> ${escapeHTML(it.warrantyType)} — ${escapeHTML(WARRANTY_PERIOD_LABELS[it.warrantyPeriod] || '')}
+            ${it.warrantyExpiry ? ' (expires ' + formatDatePretty(it.warrantyExpiry) + ')' : ''}
+            ${it.warrantyExpiry ? `<span class="badge-status ${active ? 'badge-paid' : 'badge-due'} ms-2">${active ? 'ACTIVE' : 'EXPIRED'}</span>` : ''}
+          </div>
+          <button class="btn btn-sm btn-outline-primary mt-2" onclick="openPrintPreview('${inv.id}')"><i class="bi bi-eye"></i> View Invoice</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ================= SETTINGS ================= */
+function loadSettingsForm() {
+  const s = Storage.getShop();
+  document.getElementById('sName').value = s.name || '';
+  document.getElementById('sTagline').value = s.tagline || '';
+  document.getElementById('sOwner').value = s.owner || '';
+  document.getElementById('sLicense').value = s.license || '';
+  document.getElementById('sPhone').value = s.phone || '';
+  document.getElementById('sWhatsapp').value = s.whatsapp || '';
+  document.getElementById('sEmail').value = s.email || '';
+  document.getElementById('sFacebook').value = s.facebook || '';
+  document.getElementById('sWebsite').value = s.website || '';
+  document.getElementById('sAddress').value = s.address || '';
+  document.getElementById('sTerms').value = (s.terms || DEFAULT_TERMS).join('\n');
+
+  const preview = document.getElementById('settingsLogoPreview');
+  const placeholder = document.getElementById('settingsLogoPlaceholder');
+  if (s.logo) { preview.src = s.logo; preview.classList.remove('d-none'); placeholder.classList.add('d-none'); }
+  else { preview.classList.add('d-none'); placeholder.classList.remove('d-none'); }
+}
+
+let pendingLogoData = null;
+function handleLogoUpload(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    pendingLogoData = ev.target.result;
+    const preview = document.getElementById('settingsLogoPreview');
+    preview.src = pendingLogoData;
+    preview.classList.remove('d-none');
+    document.getElementById('settingsLogoPlaceholder').classList.add('d-none');
+  };
+  reader.readAsDataURL(file);
+}
+
+function saveShopSettings() {
+  const shop = Storage.getShop();
+  shop.name = document.getElementById('sName').value.trim() || 'Mobile Shop';
+  shop.tagline = document.getElementById('sTagline').value.trim();
+  shop.owner = document.getElementById('sOwner').value.trim();
+  shop.license = document.getElementById('sLicense').value.trim();
+  shop.phone = document.getElementById('sPhone').value.trim();
+  shop.whatsapp = document.getElementById('sWhatsapp').value.trim();
+  shop.email = document.getElementById('sEmail').value.trim();
+  shop.facebook = document.getElementById('sFacebook').value.trim();
+  shop.website = document.getElementById('sWebsite').value.trim();
+  shop.address = document.getElementById('sAddress').value.trim();
+  shop.terms = document.getElementById('sTerms').value.split('\n').map(t => t.trim()).filter(Boolean);
+  if (pendingLogoData) { shop.logo = pendingLogoData; pendingLogoData = null; }
+
+  Storage.setShop(shop);
+  applyShopBranding();
+  showToast('Shop settings saved successfully', 'success');
+}
+
+/* ---------------- Backup / Restore ---------------- */
+function exportDataFile() {
+  const data = Storage.exportAll();
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'mobile-shop-backup-' + todayISO() + '.json';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+  showToast('Backup file downloaded.', 'success');
+}
+
+function importDataFile(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    try {
+      const data = JSON.parse(ev.target.result);
+      openConfirm('Importing will overwrite current data with the backup file contents. Continue?', () => {
+        Storage.importAll(data);
+        localStorage.setItem(DB_KEYS.SEEDED, '1');
+        showToast('Data restored successfully. Reloading...', 'success');
+        setTimeout(() => location.reload(), 900);
+      });
+    } catch (err) {
+      showToast('Invalid backup file.', 'danger');
+    }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+}
+
+/* ================= PRINT PREVIEW ================= */
+function openPrintPreview(invoiceId) {
+  const inv = Storage.findInvoice(invoiceId);
+  if (!inv) return;
+  state.activePrintInvoiceId = invoiceId;
+  const customer = Storage.findCustomer(inv.customerId);
+  const shop = Storage.getShop();
+  document.getElementById('printArea').innerHTML = buildInvoicePrintHTML(inv, customer, shop);
+  bsPrintModal.show();
+}
+
+function doPrint(mode) {
+  document.body.classList.remove('print-a4', 'print-thermal');
+  document.body.classList.add(mode === 'thermal' ? 'print-thermal' : 'print-a4');
+  setTimeout(() => {
+    window.print();
+    setTimeout(() => document.body.classList.remove('print-a4', 'print-thermal'), 300);
+  }, 50);
+}
+
+</script>
+</body>
+</html>
